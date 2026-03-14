@@ -1,0 +1,26 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:17-alpine
+    container_name: bugreporter-db
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: rootpassword
+      POSTGRES_DB: bugreporter_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # Mailpit - Local SMTP Testing Server
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: bugreporter-mail
+    ports:
+      - "1025:1025" # SMTP port for Spring Boot
+      - "8025:8025" # Web UI port to view emails
+    restart: unless-stopped
+
+volumes:
+  postgres-data:

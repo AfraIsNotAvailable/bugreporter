@@ -1,0 +1,35 @@
+com.group11.bugreporter/
+│
+├── BugreporterApplication.java       # The main entry point of the Spring Boot application
+│
+├── config/                           # Application configuration classes
+│   └── SecurityConfig.java           # Setup for routing guards, password encryption, and roles
+│
+├── controller/                       # Presentation Layer (REST APIs)
+│   ├── UserController.java           # Endpoints for user management/moderation
+│   ├── BugController.java            # Endpoints for creating/fetching bugs
+│   └── CommentController.java        # Endpoints for commenting and voting
+│
+├── dto/                              # Data Transfer Objects
+│   ├── request/                      # Payloads coming from the React frontend (e.g., LoginRequest)
+│   └── response/                     # Payloads sent back to React (e.g., BugResponse)
+│
+├── entity/                           # Domain/Data Models
+│   ├── User.java                     # Maps to the 'users' table in PostgreSQL
+│   ├── Bug.java                      # Maps to the 'bugs' table
+│   ├── Comment.java                  # Maps to the 'comments' table
+│   └── Tag.java                      # Maps to the 'tags' table
+│
+├── exception/                        # Global Error Handling
+│   ├── GlobalExceptionHandler.java   # Catches exceptions and returns standard HTTP error responses
+│   └── ResourceNotFoundException.java# Custom exception (e.g., "Bug not found")
+│
+├── repository/                       # Data Access Layer
+│   ├── UserRepository.java           # Spring Data JPA interface for User queries
+│   ├── BugRepository.java            # Spring Data JPA interface for Bug queries
+│   └── CommentRepository.java        # Spring Data JPA interface for Comment queries
+│
+└── service/                          # Business Logic Layer
+    ├── UserService.java              # Logic for user scoring, banning, and moderation
+    ├── BugService.java               # Logic for bug status transitions and filtering
+    └── CommentService.java           # Logic for voting limits and score calculations
