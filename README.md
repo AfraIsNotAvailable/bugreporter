@@ -53,11 +53,11 @@
 - [ ] Implementează statusul bug-ului: "Primit" (la postare), "În proces" (la primul comentariu), "Rezolvat" (când
   creatorul acceptă comentariile, blocând adăugarea altora noi).
 
-### Membru Echipă 3 (Interacțiuni Sociale, Votare & Scoruri)
+### Membru Echipă 3 (Interacțiuni Sociale, Votare & Scoruri) - Afrasinei Serban
 
-- [ ] Implementează CRUD pentru Comentarii (autor, text, imagine, dată/oră creare).
-- [ ] Afișează lista de comentarii asociată fiecărui bug individual.
-- [ ] Restricționează editarea/ștergerea comentariilor doar pentru autorul lor inițial.
+- [ ] (IN PROGRESS) Implementează CRUD pentru Comentarii (autor, text, imagine, dată/oră creare). (TEST THIS)
+- [ ] (IN PROGRESS) Afișează lista de comentarii asociată fiecărui bug individual. (TEST THIS)
+- [ ] (IN PROGRESS) Restricționează editarea/ștergerea comentariilor doar pentru autorul lor inițial. (TEST THIS)
 - [ ] Implementează sistemul de votare (upvote/downvote, like/dislike) o singură dată pe bug/comentariu.
 - [ ] Blochează posibilitatea ca utilizatorii să își voteze propriile bug-uri sau comentarii.
 - [ ] Calculează și afișează numărul de voturi (poate fi negativ), sortând comentariile descrescător după acest număr.
