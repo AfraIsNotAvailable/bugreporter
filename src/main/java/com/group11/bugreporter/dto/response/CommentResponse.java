@@ -15,8 +15,10 @@ public class CommentResponse {
     private Long authorId;
     private String authorUsername; // optional, for display purposes
     private LocalDateTime createdAt;
+    private Integer score;
 
     public static CommentResponse fromEntity(Comment comment) {
+
         return CommentResponse.builder()
                 .id(comment.getId())
                 .text(comment.getText())
@@ -24,6 +26,7 @@ public class CommentResponse {
                 .authorId(comment.getAuthor().getId())
                 // .authorUsername(comment.getAuthor().getUsername()) // todo: add username to User entity and uncomment this line
                 .createdAt(comment.getCreatedAt())
+                .score(comment.getScore())
                 .build();
     }
 }

@@ -3,6 +3,8 @@ package com.group11.bugreporter.controller;
 import com.group11.bugreporter.dto.request.CommentRequest;
 import com.group11.bugreporter.dto.response.CommentResponse;
 import com.group11.bugreporter.entity.Comment;
+import com.group11.bugreporter.entity.VoteType;
+import com.group11.bugreporter.exception.InvalidVoteTypeException;
 import com.group11.bugreporter.service.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/api/comments")
@@ -29,7 +32,7 @@ public class CommentController {
      * @param authorId the identifier of the user creating the comment
      *                 (currently passed as request parameter; planned to come from SecurityContext)
      * @param payload  request payload containing the comment text and optional image URL
-     * @return a {@link ResponseEntity} containing the created {@link Comment} and HTTP 201 status
+     * @return a {@link ResponseEntity} containing the created {@link CommentResponse} and HTTP 201 status
      */
     @PostMapping("/bug/{bugId}")
     public ResponseEntity<CommentResponse> createComment(
@@ -64,7 +67,7 @@ public class CommentController {
      * @param requestingUserId the identifier of the user requesting the update
      *                         (used for authorization checks in the service layer)
      * @param payload          request payload containing updated comment text and optional image URL
-     * @return a {@link ResponseEntity} containing the updated {@link Comment} and HTTP 200 status
+     * @return a {@link ResponseEntity} containing the updated {@link CommentResponse} and HTTP 200 status
      */
     @PutMapping("/{commentId}")
     public ResponseEntity<CommentResponse> updateComment(
@@ -91,5 +94,26 @@ public class CommentController {
     ) {
         commentService.deleteComment(commentId, requestingUserId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/{commentId}/vote")
+    public ResponseEntity<CommentResponse> voteComment(
+            @PathVariable Long commentId,
+            @RequestParam Long requestingUserId, // todo: use SecurityContext to authorize action
+            @RequestParam String voteType
+    ) {
+        if (voteType == null || voteType.isBlank()) {
+            throw new InvalidVoteTypeException("voteType is required. Allowed values: UPVOTE, DOWNVOTE.");
+        }
+
+        VoteType parsedVoteType;
+        try {
+            parsedVoteType = VoteType.valueOf(voteType.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            throw new InvalidVoteTypeException("Invalid voteType '" + voteType + "'. Allowed values: UPVOTE, DOWNVOTE.");
+        }
+
+        Comment updatedComment = commentService.voteComment(commentId, requestingUserId, parsedVoteType);
+        return new ResponseEntity<>(CommentResponse.fromEntity(updatedComment), HttpStatus.OK);
     }
 }

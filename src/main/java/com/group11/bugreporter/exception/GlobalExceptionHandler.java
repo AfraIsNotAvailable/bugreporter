@@ -28,4 +28,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleForbiddenException(ForbiddenException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.FORBIDDEN); // 403
     }
+
+    @ExceptionHandler(InvalidVoteTypeException.class)
+    public ResponseEntity<String> handleInvalidVoteTypeException(InvalidVoteTypeException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST); // 400
+    }
 }

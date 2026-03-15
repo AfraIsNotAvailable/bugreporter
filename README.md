@@ -55,12 +55,12 @@
 
 ### Membru Echipă 3 (Interacțiuni Sociale, Votare & Scoruri) - Afrasinei Serban
 
-- [ ] (IN PROGRESS) Implementează CRUD pentru Comentarii (autor, text, imagine, dată/oră creare). (TEST THIS)
-- [ ] (IN PROGRESS) Afișează lista de comentarii asociată fiecărui bug individual. (TEST THIS)
-- [ ] (IN PROGRESS) Restricționează editarea/ștergerea comentariilor doar pentru autorul lor inițial. (TEST THIS)
-- [ ] Implementează sistemul de votare (upvote/downvote, like/dislike) o singură dată pe bug/comentariu.
-- [ ] Blochează posibilitatea ca utilizatorii să își voteze propriile bug-uri sau comentarii.
-- [ ] Calculează și afișează numărul de voturi (poate fi negativ), sortând comentariile descrescător după acest număr.
+- [x] Implementează CRUD pentru Comentarii (autor, text, imagine, dată/oră creare). (TEST THIS)
+- [x] Afișează lista de comentarii asociată fiecărui bug individual. (TEST THIS)
+- [x] Restricționează editarea/ștergerea comentariilor doar pentru autorul lor inițial. (TEST THIS)
+- [x] Implementează sistemul de votare (upvote/downvote, like/dislike) o singură dată pe bug/comentariu. (TEST THIS)
+- [x] Blochează posibilitatea ca utilizatorii să își voteze propriile bug-uri sau comentarii. (TEST THIS)
+- [x] Calculează și afișează numărul de voturi (poate fi negativ), sortând comentariile descrescător după acest număr. (TEST THIS)
 - [ ] **Funcție Bonus 1:** Implementează algoritmul de scor (start la 0 pct; +2.5 pt bug votat pozitiv, +5 pt comentariu
   votat pozitiv; -1.5 pt bug votat negativ, -2.5 pt comentariu votat negativ, -1.5 dacă votează negativ un alt
   utilizator).

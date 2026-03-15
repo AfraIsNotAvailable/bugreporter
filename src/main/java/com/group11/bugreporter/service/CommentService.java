@@ -1,18 +1,18 @@
 package com.group11.bugreporter.service;
 
-import com.group11.bugreporter.entity.Bug;
-import com.group11.bugreporter.entity.Comment;
-import com.group11.bugreporter.entity.User;
+import com.group11.bugreporter.entity.*;
 import com.group11.bugreporter.exception.ResourceNotFoundException;
 import com.group11.bugreporter.exception.ForbiddenException;
 import com.group11.bugreporter.repository.BugRepository;
 import com.group11.bugreporter.repository.CommentRepository;
+import com.group11.bugreporter.repository.CommentVoteRepository;
 import com.group11.bugreporter.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +23,8 @@ public class CommentService {
      */
     private final CommentRepository commentRepository;
 
+    private final CommentVoteRepository commentVoteRepository;
+
     /**
      * Repository used to validate and load the bug associated with a comment.
      */
@@ -32,6 +34,42 @@ public class CommentService {
      * Repository used to validate and load the user creating or modifying a comment.
      */
     private final UserRepository userRepository;
+
+    @Transactional
+    public Comment voteComment(Long commentId, Long requestingUserId, VoteType voteType) {
+        Comment comment = commentRepository.findByIdForUpdate(commentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Comment not found with id: " + commentId));
+        User user = userRepository.findById(requestingUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + requestingUserId));
+        if (comment.getAuthor().getId().equals(requestingUserId)) {
+            throw new ForbiddenException("Users cannot vote on their own comments");
+        }
+
+        Optional<CommentVote> existingVoteOpt = commentVoteRepository.findByCommentIdAndUserId(commentId, requestingUserId);
+        if (existingVoteOpt.isPresent()) {
+            CommentVote existingVote = existingVoteOpt.get();
+            if (existingVote.getVoteType() == voteType) {
+                // User is trying to cast the same vote again, so we remove the existing vote
+                commentVoteRepository.delete(existingVote);
+                comment.setScore(comment.getScore() + (voteType == VoteType.UPVOTE ? -1 : 1));
+            } else {
+                // User is changing their vote, so we update the existing vote
+                existingVote.setVoteType(voteType);
+                commentVoteRepository.save(existingVote);
+                comment.setScore(comment.getScore() + (voteType == VoteType.UPVOTE ? 2 : -2));
+            }
+        } else {
+            // No existing vote, so we create a new one
+            CommentVote newVote = CommentVote.builder()
+                    .comment(comment)
+                    .user(user)
+                    .voteType(voteType)
+                    .build();
+            commentVoteRepository.save(newVote);
+            comment.setScore(comment.getScore() + (voteType == VoteType.UPVOTE ? 1 : -1));
+        }
+        return commentRepository.save(comment);
+    }
 
     /**
      * Creates a new comment for a given bug and author.
@@ -65,14 +103,14 @@ public class CommentService {
     }
 
     /**
-     * Retrieves all comments associated with a specific bug, ordered by creation time.
+     * Retrieves all comments associated with a specific bug, ordered by score descending.
      *
      * <p>Before querying for comments, the method verifies that the bug exists.
      * This avoids returning an empty list for an invalid bug identifier and instead
      * surfaces a domain-specific not-found error.</p>
      *
      * @param bugId the ID of the bug whose comments should be loaded
-     * @return a list of comments ordered from oldest to newest
+     * @return a list of comments ordered from highest score to lowest score
      * @throws ResourceNotFoundException if the bug does not exist
      */
     @Transactional(readOnly = true)
@@ -81,7 +119,7 @@ public class CommentService {
             throw new ResourceNotFoundException("Bug not found with id: " + bugId);
         }
 
-        return commentRepository.findByBugIdOrderByCreatedAtAsc(bugId);
+        return commentRepository.findByBugIdOrderByScoreDescCreatedAtDesc(bugId);
     }
 
     /**
