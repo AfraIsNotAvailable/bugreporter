@@ -1,4 +1,4 @@
-package com.group11.bugreporter.dto;
+package com.group11.bugreporter.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

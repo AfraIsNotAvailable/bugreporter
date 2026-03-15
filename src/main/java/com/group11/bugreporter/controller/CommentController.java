@@ -1,6 +1,7 @@
 package com.group11.bugreporter.controller;
 
-import com.group11.bugreporter.dto.CommentRequest;
+import com.group11.bugreporter.dto.request.CommentRequest;
+import com.group11.bugreporter.dto.response.CommentResponse;
 import com.group11.bugreporter.entity.Comment;
 import com.group11.bugreporter.service.CommentService;
 import jakarta.validation.Valid;
@@ -31,13 +32,14 @@ public class CommentController {
      * @return a {@link ResponseEntity} containing the created {@link Comment} and HTTP 201 status
      */
     @PostMapping("/bug/{bugId}")
-    public ResponseEntity<Comment> createComment(
+    public ResponseEntity<CommentResponse> createComment(
             @PathVariable Long bugId,
             @RequestParam Long authorId, // todo: use SecurityContext to authorize action
             @Valid @RequestBody CommentRequest payload // this uses the dto request obj to encapsulate the comment data
     ) {
         Comment createdComment = commentService.createComment(bugId, authorId, payload.getText(), payload.getImageUrl());
-        return new ResponseEntity<>(createdComment, HttpStatus.CREATED);
+
+        return new ResponseEntity<>(CommentResponse.fromEntity(createdComment), HttpStatus.CREATED);
     }
 
     /**
@@ -47,9 +49,12 @@ public class CommentController {
      * @return a {@link ResponseEntity} containing the list of comments and HTTP 200 status
      */
     @GetMapping("/bug/{bugId}")
-    public ResponseEntity<List<Comment>> getCommentsByBugId(@PathVariable Long bugId) {
+    public ResponseEntity<List<CommentResponse>> getCommentsByBugId(@PathVariable Long bugId) {
         List<Comment> comments = commentService.getCommentsByBugId(bugId);
-        return new ResponseEntity<>(comments, HttpStatus.OK);
+        List<CommentResponse> response = comments.stream()
+                .map(CommentResponse::fromEntity)
+                .toList();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     /**
@@ -62,13 +67,13 @@ public class CommentController {
      * @return a {@link ResponseEntity} containing the updated {@link Comment} and HTTP 200 status
      */
     @PutMapping("/{commentId}")
-    public ResponseEntity<Comment> updateComment(
+    public ResponseEntity<CommentResponse> updateComment(
             @PathVariable Long commentId,
             @RequestParam Long requestingUserId, // todo: use SecurityContext to authorize action
             @Valid @RequestBody CommentRequest payload // this uses the dto request obj to encapsulate the comment data (too)
     ) {
         Comment updatedComment = commentService.updateComment(commentId, requestingUserId, payload.getText(), payload.getImageUrl());
-        return new ResponseEntity<>(updatedComment, HttpStatus.OK);
+        return new ResponseEntity<>(CommentResponse.fromEntity(updatedComment), HttpStatus.OK);
     }
 
     /**
