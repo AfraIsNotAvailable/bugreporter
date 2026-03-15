@@ -7,38 +7,34 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "comments")
+@Table(name = "comment_votes", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"comment_id", "user_id"})
+})
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
-public class Comment {
+public class CommentVote {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String text;
-
-    @Column(name = "image_url")
-    private String imageUrl;
+    private VoteType voteType;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id", nullable = false)
-    private User author;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bug_id", nullable = false)
-    private Bug bug;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer score = 0; // This field will be updated based on upvotes/downvotes from CommentVote
+    @JoinColumn(name = "comment_id", nullable = false)
+    private Comment comment;
 
 }
