@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Vite/React/Frontend ###
+bugreporter-frontend/node_modules/
+bugreporter-frontend/dist/
+build/
+*.local
+
