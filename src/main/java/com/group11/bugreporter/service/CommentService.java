@@ -1,6 +1,8 @@
 package com.group11.bugreporter.service;
 
 import com.group11.bugreporter.entity.*;
+import com.group11.bugreporter.entity.enums.Role;
+import com.group11.bugreporter.entity.enums.VoteType;
 import com.group11.bugreporter.exception.ResourceNotFoundException;
 import com.group11.bugreporter.exception.ForbiddenException;
 import com.group11.bugreporter.repository.BugRepository;
@@ -79,18 +81,18 @@ public class CommentService {
      * validated, the method builds a new {@link Comment} entity and persists it.</p>
      *
      * @param bugId    the ID of the bug the comment belongs to
-     * @param authorId the ID of the user creating the comment
+     * @param requestingUserId the ID of the authenticated user creating the comment
      * @param text     the textual content of the comment
      * @param image    an optional image reference associated with the comment
      * @return the saved {@link Comment} entity
      * @throws ResourceNotFoundException if the bug or author cannot be found
      */
     @Transactional
-    public Comment createComment(Long bugId, Long authorId, String text, String image) {
+    public Comment createComment(Long bugId, Long requestingUserId, String text, String image) {
         Bug bug = bugRepository.findById(bugId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bug not found with id: " + bugId));
-        User author = userRepository.findById(authorId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + authorId));
+        User author = userRepository.findById(requestingUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + requestingUserId));
 
         Comment comment = Comment.builder()
                 .text(text)
@@ -131,6 +133,7 @@ public class CommentService {
      *
      * @param commentId        ID of the comment to update
      * @param requestingUserId ID of the user making the update request; must match the author
+     * @param requestingUserRole role of the user making the request
      * @param newText          new text for the comment
      * @param newImage         new image URL for the comment; if {@code null}, the existing image is kept
      * @return the updated {@link Comment} object
@@ -138,10 +141,12 @@ public class CommentService {
      * @throws ForbiddenException     if the requesting user is not the author
      */
     @Transactional
-    public Comment updateComment(Long commentId, Long requestingUserId, String newText, String newImage) {
+    public Comment updateComment(Long commentId, Long requestingUserId, Role requestingUserRole, String newText, String newImage) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comment not found with id: " + commentId));
-        if (!comment.getAuthor().getId().equals(requestingUserId)) {
+        boolean isAuthor = comment.getAuthor().getId().equals(requestingUserId);
+        boolean isModerator = requestingUserRole == Role.MODERATOR || requestingUserRole == Role.ADMIN;
+        if (!isAuthor && !isModerator) {
             throw new ForbiddenException("User is not the author of the comment");
         }
 
@@ -161,15 +166,18 @@ public class CommentService {
      *
      * @param commentId        ID of the comment to delete
      * @param requestingUserId ID of the user attempting the deletion; must match the author
+     * @param requestingUserRole role of the user attempting the deletion
      * @throws ResourceNotFoundException if the comment cannot be found
      * @throws ForbiddenException     if the requesting user is not the author
      */
     @Transactional
-    public void deleteComment(Long commentId, Long requestingUserId) {
+    public void deleteComment(Long commentId, Long requestingUserId, Role requestingUserRole) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comment not found with id: " + commentId));
 
-        if (!comment.getAuthor().getId().equals(requestingUserId)) {
+        boolean isAuthor = comment.getAuthor().getId().equals(requestingUserId);
+        boolean isModerator = requestingUserRole == Role.MODERATOR || requestingUserRole == Role.ADMIN;
+        if (!isAuthor && !isModerator) {
             throw new ForbiddenException("User is not the author of the comment");
         }
 

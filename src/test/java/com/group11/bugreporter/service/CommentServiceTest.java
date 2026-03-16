@@ -3,7 +3,8 @@ package com.group11.bugreporter.service;
 import com.group11.bugreporter.entity.Comment;
 import com.group11.bugreporter.entity.CommentVote;
 import com.group11.bugreporter.entity.User;
-import com.group11.bugreporter.entity.VoteType;
+import com.group11.bugreporter.entity.enums.Role;
+import com.group11.bugreporter.entity.enums.VoteType;
 import com.group11.bugreporter.exception.ForbiddenException;
 import com.group11.bugreporter.exception.ResourceNotFoundException;
 import com.group11.bugreporter.repository.BugRepository;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -167,6 +169,26 @@ class CommentServiceTest {
         );
 
         assertEquals("Bug not found with id: 404", ex.getMessage());
+    }
+
+    @Test
+    void updateComment_allowsModeratorToUpdateForeignComment() {
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(comment));
+        when(commentRepository.save(comment)).thenReturn(comment);
+
+        Comment result = commentService.updateComment(COMMENT_ID, OTHER_USER_ID, Role.MODERATOR, "updated", null);
+
+        assertEquals("updated", result.getText());
+        verify(commentRepository).save(comment);
+    }
+
+    @Test
+    void deleteComment_allowsAdminToDeleteForeignComment() {
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(comment));
+
+        assertDoesNotThrow(() -> commentService.deleteComment(COMMENT_ID, OTHER_USER_ID, Role.ADMIN));
+
+        verify(commentRepository).delete(comment);
     }
 }
 

@@ -1,5 +1,6 @@
 package com.group11.bugreporter.entity;
 
+import com.group11.bugreporter.entity.enums.VoteType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
