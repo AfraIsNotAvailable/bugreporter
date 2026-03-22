@@ -1,0 +1,12 @@
+$kind: http-request
+name: Get Bug
+url: "{{comments}}/bug/1"
+method: GET
+body:
+  type: json
+  content: ""
+auth:
+  type: bearer
+  credentials:
+    token: "{{jwt_token}}"
+order: 1774083008305

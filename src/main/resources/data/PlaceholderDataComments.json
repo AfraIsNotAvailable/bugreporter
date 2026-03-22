@@ -1,0 +1,182 @@
+[
+  {
+    "id": 5,
+    "text": "I checked the logs, and it looks like a timeout issue with the database connection.",
+    "imageUrl": null,
+    "createdAt": "2026-03-17T09:45:10",
+    "author": { "id": 2 },
+    "bug": { "id": 101 },
+    "score": 8
+  },
+  {
+    "id": 6,
+    "text": "Can we increase the connection pool size as a temporary fix?",
+    "imageUrl": null,
+    "createdAt": "2026-03-17T09:50:00",
+    "author": { "id": 4 },
+    "bug": { "id": 101 },
+    "score": 3
+  },
+  {
+    "id": 7,
+    "text": "The UI alignment is completely broken on mobile portrait mode. See attached.",
+    "imageUrl": "https://example.com/assets/mobile-bug-ui.jpg",
+    "createdAt": "2026-03-12T11:05:22",
+    "author": { "id": 5 },
+    "bug": { "id": 103 },
+    "score": 15
+  },
+  {
+    "id": 8,
+    "text": "I'm unable to reproduce this on iOS Safari. Is it Android specific?",
+    "imageUrl": null,
+    "createdAt": "2026-03-12T11:30:15",
+    "author": { "id": 1 },
+    "bug": { "id": 103 },
+    "score": 0
+  },
+  {
+    "id": 9,
+    "text": "Yes, only happening on Android Chrome version 122+.",
+    "imageUrl": null,
+    "createdAt": "2026-03-12T12:00:45",
+    "author": { "id": 5 },
+    "bug": { "id": 103 },
+    "score": 4
+  },
+  {
+    "id": 10,
+    "text": "Clearing the cache resolves it temporarily, but it comes back after a reload.",
+    "imageUrl": null,
+    "createdAt": "2026-03-13T08:15:00",
+    "author": { "id": 3 },
+    "bug": { "id": 104 },
+    "score": 2
+  },
+  {
+    "id": 11,
+    "text": "I've opened a PR with a potential fix: #4052. Please review.",
+    "imageUrl": null,
+    "createdAt": "2026-03-14T14:22:10",
+    "author": { "id": 2 },
+    "bug": { "id": 104 },
+    "score": 25
+  },
+  {
+    "id": 12,
+    "text": "PR looks good, but it breaks the unit tests in the auth module.",
+    "imageUrl": null,
+    "createdAt": "2026-03-14T15:10:05",
+    "author": { "id": 1 },
+    "bug": { "id": 104 },
+    "score": 7
+  },
+  {
+    "id": 13,
+    "text": "Ah, good catch. I will update the tests and push again.",
+    "imageUrl": null,
+    "createdAt": "2026-03-14T15:15:30",
+    "author": { "id": 2 },
+    "bug": { "id": 104 },
+    "score": 1
+  },
+  {
+    "id": 14,
+    "text": "Users are reporting data loss when clicking 'Save' rapidly. Critical issue.",
+    "imageUrl": null,
+    "createdAt": "2026-03-16T18:00:00",
+    "author": { "id": 4 },
+    "bug": { "id": 105 },
+    "score": 45
+  },
+  {
+    "id": 15,
+    "text": "We need to disable the button immediately after the first click. Debouncing isn't enough.",
+    "imageUrl": null,
+    "createdAt": "2026-03-16T18:10:12",
+    "author": { "id": 2 },
+    "bug": { "id": 105 },
+    "score": 30
+  },
+  {
+    "id": 16,
+    "text": "Here is the network payload during the double-click event.",
+    "imageUrl": "https://example.com/assets/network-trace.png",
+    "createdAt": "2026-03-16T18:25:00",
+    "author": { "id": 3 },
+    "bug": { "id": 105 },
+    "score": 12
+  },
+  {
+    "id": 17,
+    "text": "Rolling back the latest deployment to version 2.4.1 to mitigate this.",
+    "imageUrl": null,
+    "createdAt": "2026-03-16T18:40:00",
+    "author": { "id": 1 },
+    "bug": { "id": 105 },
+    "score": 50
+  },
+  {
+    "id": 18,
+    "text": "Not sure why this is marked as low priority, it's blocking our entire QA flow.",
+    "imageUrl": null,
+    "createdAt": "2026-03-15T09:00:00",
+    "author": { "id": 5 },
+    "bug": { "id": 102 },
+    "score": 18
+  },
+  {
+    "id": 19,
+    "text": "Upgraded severity to HIGH.",
+    "imageUrl": null,
+    "createdAt": "2026-03-15T09:15:30",
+    "author": { "id": 1 },
+    "bug": { "id": 102 },
+    "score": 5
+  },
+  {
+    "id": 20,
+    "text": "Thanks! I'll assign someone from the frontend team today.",
+    "imageUrl": null,
+    "createdAt": "2026-03-15T09:20:00",
+    "author": { "id": 4 },
+    "bug": { "id": 102 },
+    "score": 2
+  },
+  {
+    "id": 21,
+    "text": "Does anyone have the exact steps to reproduce? The description is a bit vague.",
+    "imageUrl": null,
+    "createdAt": "2026-03-16T10:05:00",
+    "author": { "id": 3 },
+    "bug": { "id": 102 },
+    "score": 1
+  },
+  {
+    "id": 22,
+    "text": "Step 1: Login. Step 2: Go to Dashboard. Step 3: Click 'Export PDF'. Result: 500 Error.",
+    "imageUrl": null,
+    "createdAt": "2026-03-16T10:12:45",
+    "author": { "id": 5 },
+    "bug": { "id": 102 },
+    "score": 22
+  },
+  {
+    "id": 23,
+    "text": "Confirmed. Getting a 'Missing library' exception in the worker logs.",
+    "imageUrl": "https://example.com/assets/worker-log-error.png",
+    "createdAt": "2026-03-16T10:30:10",
+    "author": { "id": 2 },
+    "bug": { "id": 102 },
+    "score": 14
+  },
+  {
+    "id": 24,
+    "text": "Looks like the dependency wasn't included in the Dockerfile update yesterday.",
+    "imageUrl": null,
+    "createdAt": "2026-03-16T10:45:00",
+    "author": { "id": 1 },
+    "bug": { "id": 102 },
+    "score": 10
+  }
+]

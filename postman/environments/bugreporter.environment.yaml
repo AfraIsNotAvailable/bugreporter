@@ -1,0 +1,14 @@
+name: bugreporter
+values:
+  - key: bugreporter_api
+    value: ''
+    enabled: true
+  - key: comments
+    value: ''
+    enabled: true
+  - key: auth
+    value: ''
+    enabled: true
+  - key: jwt_token
+    value: ''
+    enabled: true

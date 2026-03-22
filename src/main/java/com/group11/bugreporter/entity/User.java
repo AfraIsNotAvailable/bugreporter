@@ -1,8 +1,8 @@
 package com.group11.bugreporter.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
 import java.time.LocalDateTime;
 import com.group11.bugreporter.entity.enums.Role;
 
@@ -10,6 +10,9 @@ import com.group11.bugreporter.entity.enums.Role;
 @Table(name = "users")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

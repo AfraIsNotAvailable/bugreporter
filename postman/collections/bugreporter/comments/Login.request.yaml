@@ -1,0 +1,24 @@
+$kind: http-request
+name: Login
+url: "{{auth}}/login"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "username": "admin",
+        "password": "admin"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      var jsonData = pm.response.json();
+
+      if (jsonData.token) {
+          pm.environment.set("jwt_token", jsonData.token);
+          console.log("Token saved successfully!");
+      } else {
+          console.log("No token found in response.");
+      }
+    language: text/javascript
+order: 3040364556384086
