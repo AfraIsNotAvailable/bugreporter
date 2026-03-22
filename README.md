@@ -32,7 +32,7 @@
 
 ### Membru Echipă 1 (Sisteme de Bază, Gestionare Utilizatori & Moderare)
 
-- [ ] Implementează arhitectura pe straturi și maparea entităților în PostgreSQL.
+- [X] Implementează arhitectura pe straturi și maparea entităților în PostgreSQL.
 - [ ] Implementează CRUD pentru Utilizatori și rutele protejate (Routing guards).
 - [ ] Configurează autentificarea și stocarea parolelor în formă criptată.
 - [ ] Implementează privilegiile de Moderator: ștergerea sau editarea oricărui bug sau comentariu de pe site.
