@@ -2,16 +2,22 @@ package com.group11.bugreporter.service;
 
 import com.group11.bugreporter.dto.request.BugRequest;
 import com.group11.bugreporter.entity.Bug;
+import com.group11.bugreporter.entity.Tag;
 import com.group11.bugreporter.entity.User;
 import com.group11.bugreporter.entity.enums.BugStatus;
+import com.group11.bugreporter.entity.enums.Role;
+import com.group11.bugreporter.exception.ForbiddenException;
 import com.group11.bugreporter.exception.ResourceNotFoundException;
 import com.group11.bugreporter.repository.BugRepository;
+import com.group11.bugreporter.repository.TagRepository;
 import com.group11.bugreporter.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -19,7 +25,7 @@ public class BugService {
 
     private final BugRepository bugRepository;
     private final UserRepository userRepository;
-
+    private final TagRepository tagRepository;
     /**
      * creeaza un bug report nou
      * status initial - mereu open
@@ -41,14 +47,6 @@ public class BugService {
     }
 
     /**
-     * returneaza toate bugurile raportate
-     */
-    @Transactional(readOnly = true)
-    public List<Bug> getAllBugs() {
-        return bugRepository.findAll();
-    }
-
-    /**
      * cautare bug dupa id
      */
     @Transactional(readOnly = true)
@@ -61,8 +59,12 @@ public class BugService {
      * Actualizeaza continutul unui bug report
      */
     @Transactional
-    public Bug updateBug(Long id, BugRequest dto) {
+    public Bug updateBug(Long id, BugRequest dto, Long requestingUserId) {
         Bug bug = getBugById(id);
+
+        if (!bug.getAuthor().getId().equals(requestingUserId)) {
+            throw new ForbiddenException("You are not the author of this bug report");
+        }
 
         bug.setTitle(dto.getTitle());
         bug.setText(dto.getText());
@@ -89,10 +91,39 @@ public class BugService {
      * Sterge un bug
      */
     @Transactional
-    public void deleteBug(Long id) {
-        if (!bugRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Bug not found with id: " + id);
+    public void deleteBug(Long id, Long requestingUserId, Role requestingUserRole) {
+        Bug bug = getBugById(id);
+
+        boolean isAuthor = bug.getAuthor().getId().equals(requestingUserId);
+        boolean isAdmin = requestingUserRole == Role.ADMIN;
+
+        if (!isAuthor && !isAdmin) {
+            throw new ForbiddenException("Only the author or an admin can delete this bug report");
         }
-        bugRepository.deleteById(id);
+
+        bugRepository.delete(bug);
     }
+
+    @Transactional
+    public Bug addTagsToBug(Long bugId, List<String> tagNames) {
+        Bug bug = bugRepository.findById(bugId)
+                .orElseThrow(() -> new ResourceNotFoundException("Bug not found"));
+
+        Set<Tag> tagEntities = tagNames.stream()
+                .map(name -> tagRepository.findByNameIgnoreCase(name.trim())
+                        .orElseGet(() -> tagRepository.save(Tag.builder().name(name.trim()).build())))
+                .collect(Collectors.toSet());
+
+        bug.getTags().addAll(tagEntities);
+        return bugRepository.save(bug);
+    }
+
+    /**
+     * returneaza toate bugurile raportate
+     */
+    @Transactional(readOnly = true)
+    public List<Bug> getAllBugs() {
+        return bugRepository.findAllByOrderByCreatedAtDesc();
+    }
+
 }

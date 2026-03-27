@@ -65,9 +65,11 @@ public class BugController {
     @PutMapping("/{id}")
     public ResponseEntity<BugResponse> updateBug(
             @PathVariable Long id,
-            @Valid @RequestBody BugRequest request
-    ) {
-        Bug updated = bugService.updateBug(id, request);
+            @Valid @RequestBody BugRequest request,
+            Authentication authentication) {
+
+        User requestingUser = resolveAuthenticatedUser(authentication);
+        Bug updated = bugService.updateBug(id, request, requestingUser.getId());
         return ResponseEntity.ok(BugResponse.fromEntity(updated));
     }
 
@@ -89,9 +91,13 @@ public class BugController {
      * sterge un bug
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteBug(@PathVariable Long id) {
-        bugService.deleteBug(id);
+    public ResponseEntity<Void> deleteBug(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        User requestingUser = resolveAuthenticatedUser(authentication);
+        bugService.deleteBug(id, requestingUser.getId(), requestingUser.getRole());
+
         return ResponseEntity.noContent().build();
     }
 
@@ -105,5 +111,16 @@ public class BugController {
         String username = authentication.getName();
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new ForbiddenException("Authenticated user not found: " + username));
+    }
+
+
+
+    @PostMapping("/{id}/tags")
+    public ResponseEntity<BugResponse> addTags(
+            @PathVariable Long id,
+            @RequestBody List<String> tags
+    ) {
+        Bug updatedBug = bugService.addTagsToBug(id, tags);
+        return ResponseEntity.ok(BugResponse.fromEntity(updatedBug));
     }
 }
