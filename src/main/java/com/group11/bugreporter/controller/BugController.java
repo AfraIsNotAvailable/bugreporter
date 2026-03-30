@@ -6,6 +6,7 @@ import com.group11.bugreporter.entity.Bug;
 import com.group11.bugreporter.entity.User;
 import com.group11.bugreporter.entity.enums.BugStatus;
 import com.group11.bugreporter.exception.ForbiddenException;
+import com.group11.bugreporter.repository.BugRepository;
 import com.group11.bugreporter.repository.UserRepository;
 import com.group11.bugreporter.service.BugService;
 import jakarta.validation.Valid;
@@ -25,6 +26,7 @@ public class BugController {
 
     private final BugService bugService;
     private final UserRepository userRepository;
+    private final BugRepository bugRepository;
 
     /**
      * Creeaza(raporteaza) un bug nou
@@ -122,5 +124,31 @@ public class BugController {
     ) {
         Bug updatedBug = bugService.addTagsToBug(id, tags);
         return ResponseEntity.ok(BugResponse.fromEntity(updatedBug));
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<List<BugResponse>> filterBugs(
+            @RequestParam(required = false) String tag,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) boolean mine,
+            Authentication auth
+    ) {
+        List<Bug> results;
+
+        if (mine) {
+            User user = resolveAuthenticatedUser(auth);
+            results = bugRepository.findAllByAuthor_IdOrderByCreatedAtDesc(user.getId());
+        } else if (tag != null) {
+            results = bugService.getBugsByTag(tag);
+        } else if (search != null) {
+            results = bugService.searchByTitle(search);
+        } else if (userId != null) {
+            results = bugService.getBugsByAuthor(userId);
+        } else {
+            results = bugRepository.findAllByOrderByCreatedAtDesc();
+        }
+
+        return ResponseEntity.ok(results.stream().map(BugResponse::fromEntity).toList());
     }
 }

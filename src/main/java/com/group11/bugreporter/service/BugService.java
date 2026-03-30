@@ -126,4 +126,30 @@ public class BugService {
         return bugRepository.findAllByOrderByCreatedAtDesc();
     }
 
+    @Transactional(readOnly = true)
+    public List<Bug> getBugsByTag(String tagName) {
+        return bugRepository.findAllByTags_NameIgnoreCaseOrderByCreatedAtDesc(tagName);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Bug> searchByTitle(String title) {
+        return bugRepository.findAllByTitleContainingIgnoreCaseOrderByCreatedAtDesc(title);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Bug> getBugsByAuthor(Long authorId) {
+        return bugRepository.findAllByAuthor_IdOrderByCreatedAtDesc(authorId);
+    }
+
+    @Transactional
+    public Bug resolveBug(Long bugId, Long requestingUserId) {
+        Bug bug = getBugById(bugId);
+        if (!bug.getAuthor().getId().equals(requestingUserId)) {
+            throw new ForbiddenException("Doar autorul bug-ului poate confirma rezolvarea acestuia.");
+        }
+
+        bug.setStatus(com.group11.bugreporter.entity.enums.BugStatus.FIXED);
+        return bugRepository.save(bug);
+    }
+
 }

@@ -91,8 +91,19 @@ public class CommentService {
     public Comment createComment(Long bugId, Long requestingUserId, String text, String image) {
         Bug bug = bugRepository.findById(bugId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bug not found with id: " + bugId));
+
+        if (bug.getStatus() == com.group11.bugreporter.entity.enums.BugStatus.FIXED ||
+                bug.getStatus() == com.group11.bugreporter.entity.enums.BugStatus.CLOSED) {
+            throw new ForbiddenException("Bug-ul este rezolvat. Nu se mai pot adauga comentarii.");
+        }
+
         User author = userRepository.findById(requestingUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + requestingUserId));
+
+        if (bug.getStatus() == com.group11.bugreporter.entity.enums.BugStatus.OPEN) {
+            bug.setStatus(com.group11.bugreporter.entity.enums.BugStatus.IN_PROGRESS);
+            bugRepository.save(bug); // Salvam modificarea statusului in baza de date
+        }
 
         Comment comment = Comment.builder()
                 .text(text)
