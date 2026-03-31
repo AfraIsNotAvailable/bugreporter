@@ -148,7 +148,7 @@ public class BugService {
             throw new ForbiddenException("Doar autorul bug-ului poate confirma rezolvarea acestuia.");
         }
 
-        bug.setStatus(com.group11.bugreporter.entity.enums.BugStatus.FIXED);
+        bug.setStatus(BugStatus.FIXED);
         return bugRepository.save(bug);
     }
 

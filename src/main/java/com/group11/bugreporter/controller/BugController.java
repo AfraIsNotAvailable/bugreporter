@@ -6,7 +6,6 @@ import com.group11.bugreporter.entity.Bug;
 import com.group11.bugreporter.entity.User;
 import com.group11.bugreporter.entity.enums.BugStatus;
 import com.group11.bugreporter.exception.ForbiddenException;
-import com.group11.bugreporter.repository.BugRepository;
 import com.group11.bugreporter.repository.UserRepository;
 import com.group11.bugreporter.service.BugService;
 import jakarta.validation.Valid;
@@ -26,7 +25,6 @@ public class BugController {
 
     private final BugService bugService;
     private final UserRepository userRepository;
-    private final BugRepository bugRepository;
 
     /**
      * Creeaza(raporteaza) un bug nou
@@ -138,7 +136,7 @@ public class BugController {
 
         if (mine) {
             User user = resolveAuthenticatedUser(auth);
-            results = bugRepository.findAllByAuthor_IdOrderByCreatedAtDesc(user.getId());
+            results = bugService.getBugsByAuthor(user.getId());
         } else if (tag != null) {
             results = bugService.getBugsByTag(tag);
         } else if (search != null) {
@@ -146,9 +144,19 @@ public class BugController {
         } else if (userId != null) {
             results = bugService.getBugsByAuthor(userId);
         } else {
-            results = bugRepository.findAllByOrderByCreatedAtDesc();
+            results = bugService.getAllBugs();
         }
 
         return ResponseEntity.ok(results.stream().map(BugResponse::fromEntity).toList());
+    }
+
+    @PatchMapping("/{id}/resolve")
+    public ResponseEntity<BugResponse> resolveBug(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        User requestingUser = resolveAuthenticatedUser(authentication);
+        Bug resolved = bugService.resolveBug(id, requestingUser.getId());
+        return ResponseEntity.ok(BugResponse.fromEntity(resolved));
     }
 }

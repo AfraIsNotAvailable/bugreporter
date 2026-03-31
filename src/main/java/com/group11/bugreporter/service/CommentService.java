@@ -1,6 +1,7 @@
 package com.group11.bugreporter.service;
 
 import com.group11.bugreporter.entity.*;
+import com.group11.bugreporter.entity.enums.BugStatus;
 import com.group11.bugreporter.entity.enums.Role;
 import com.group11.bugreporter.entity.enums.VoteType;
 import com.group11.bugreporter.exception.ResourceNotFoundException;
@@ -92,16 +93,16 @@ public class CommentService {
         Bug bug = bugRepository.findById(bugId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bug not found with id: " + bugId));
 
-        if (bug.getStatus() == com.group11.bugreporter.entity.enums.BugStatus.FIXED ||
-                bug.getStatus() == com.group11.bugreporter.entity.enums.BugStatus.CLOSED) {
+        if (bug.getStatus() == BugStatus.FIXED ||
+                bug.getStatus() == BugStatus.CLOSED) {
             throw new ForbiddenException("Bug-ul este rezolvat. Nu se mai pot adauga comentarii.");
         }
 
         User author = userRepository.findById(requestingUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + requestingUserId));
 
-        if (bug.getStatus() == com.group11.bugreporter.entity.enums.BugStatus.OPEN) {
-            bug.setStatus(com.group11.bugreporter.entity.enums.BugStatus.IN_PROGRESS);
+        if (bug.getStatus() == BugStatus.OPEN) {
+            bug.setStatus(BugStatus.IN_PROGRESS);
             bugRepository.save(bug); // Salvam modificarea statusului in baza de date
         }
 
