@@ -123,4 +123,40 @@ public class BugController {
         Bug updatedBug = bugService.addTagsToBug(id, tags);
         return ResponseEntity.ok(BugResponse.fromEntity(updatedBug));
     }
+
+    @GetMapping("/filter")
+    public ResponseEntity<List<BugResponse>> filterBugs(
+            @RequestParam(required = false) String tag,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) boolean mine,
+            Authentication auth
+    ) {
+        List<Bug> results;
+
+        if (mine) {
+            User user = resolveAuthenticatedUser(auth);
+            results = bugService.getBugsByAuthor(user.getId());
+        } else if (tag != null) {
+            results = bugService.getBugsByTag(tag);
+        } else if (search != null) {
+            results = bugService.searchByTitle(search);
+        } else if (userId != null) {
+            results = bugService.getBugsByAuthor(userId);
+        } else {
+            results = bugService.getAllBugs();
+        }
+
+        return ResponseEntity.ok(results.stream().map(BugResponse::fromEntity).toList());
+    }
+
+    @PatchMapping("/{id}/resolve")
+    public ResponseEntity<BugResponse> resolveBug(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        User requestingUser = resolveAuthenticatedUser(authentication);
+        Bug resolved = bugService.resolveBug(id, requestingUser.getId());
+        return ResponseEntity.ok(BugResponse.fromEntity(resolved));
+    }
 }
