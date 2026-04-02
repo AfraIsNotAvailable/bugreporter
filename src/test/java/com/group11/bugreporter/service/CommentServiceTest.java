@@ -1,5 +1,6 @@
 package com.group11.bugreporter.service;
 
+import com.group11.bugreporter.entity.Bug;
 import com.group11.bugreporter.entity.Comment;
 import com.group11.bugreporter.entity.CommentVote;
 import com.group11.bugreporter.entity.User;
@@ -190,5 +191,32 @@ class CommentServiceTest {
 
         verify(commentRepository).delete(comment);
     }
+
+    @Test
+    void createComment_ShouldChangeStatusTo_IN_PROGRESS() {
+        // in process, la primu comm
+        Bug bug = Bug.builder().id(1L).status(com.group11.bugreporter.entity.enums.BugStatus.OPEN).build();
+        User user = new User(); user.setId(2L);
+
+        when(bugRepository.findById(1L)).thenReturn(Optional.of(bug));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(user));
+        when(commentRepository.save(any(com.group11.bugreporter.entity.Comment.class))).thenAnswer(i -> i.getArgument(0));
+
+        commentService.createComment(1L, 2L, "Test", null);
+
+        assertEquals(com.group11.bugreporter.entity.enums.BugStatus.IN_PROGRESS, bug.getStatus());
+    }
+
+    @Test
+    void createComment_OnFixedBug_ShouldThrowException() {
+        // blocheaza adaugarea altora
+        Bug bug = Bug.builder().id(1L).status(com.group11.bugreporter.entity.enums.BugStatus.FIXED).build();
+        when(bugRepository.findById(1L)).thenReturn(Optional.of(bug));
+
+        assertThrows(ForbiddenException.class, () ->
+                commentService.createComment(1L, 2L, "Inca un comment", null)
+        );
+    }
+
 }
 
