@@ -1,0 +1,5 @@
+$kind: http-request
+name: Unban User
+url: "{{users}}/1/unban"
+method: PUT
+order: 4174919253048780

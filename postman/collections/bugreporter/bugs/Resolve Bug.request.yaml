@@ -1,0 +1,9 @@
+$kind: http-request
+name: Resolve Bug
+url: "{{bugs}}/1/resolve"
+method: PATCH
+auth:
+  type: bearer
+  credentials:
+    token: "{{jwt_token}}"
+order: 1775141554883

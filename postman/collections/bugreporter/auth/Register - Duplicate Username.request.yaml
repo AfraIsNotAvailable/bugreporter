@@ -1,0 +1,13 @@
+$kind: http-request
+name: Register - Duplicate Username
+url: "{{auth}}/register"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "username": "admin",
+        "email": "other@example.com",
+        "password": "password123"
+    }
+order: 369909077556813

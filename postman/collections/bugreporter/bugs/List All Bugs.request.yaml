@@ -1,0 +1,5 @@
+$kind: http-request
+name: List All Bugs
+url: "{{bugs}}"
+method: GET
+order: 1775141554877

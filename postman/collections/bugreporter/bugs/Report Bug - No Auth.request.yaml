@@ -1,0 +1,13 @@
+$kind: http-request
+name: Report Bug - No Auth
+url: "{{bugs}}"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "title": "Bug without authentication",
+        "text": "This request has no JWT token and should return 403.",
+        "imageUrl": ""
+    }
+order: 1775141554887

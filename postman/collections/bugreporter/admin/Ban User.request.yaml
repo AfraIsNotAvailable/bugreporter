@@ -1,0 +1,9 @@
+$kind: http-request
+name: Ban User
+url: "{{admin}}/users/1/ban?banned=true"
+method: PUT
+auth:
+  type: bearer
+  credentials:
+    token: "{{jwt_token}}"
+order: 4500000000000004

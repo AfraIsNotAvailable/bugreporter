@@ -1,0 +1,13 @@
+$kind: http-request
+name: Update User
+url: "{{users}}/1"
+method: PUT
+body:
+  type: json
+  content: |-
+    {
+        "username": "updateduser",
+        "email": "updated@example.com",
+        "password": "newpassword123"
+    }
+order: 4174919253048776

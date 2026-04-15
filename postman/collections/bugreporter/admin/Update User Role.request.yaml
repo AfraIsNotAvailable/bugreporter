@@ -1,0 +1,9 @@
+$kind: http-request
+name: Update User Role
+url: "{{admin}}/users/1/role?role=MODERATOR"
+method: PUT
+auth:
+  type: bearer
+  credentials:
+    token: "{{jwt_token}}"
+order: 4500000000000005

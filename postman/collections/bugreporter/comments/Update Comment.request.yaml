@@ -1,0 +1,15 @@
+$kind: http-request
+name: Update Comment
+url: "{{comments}}/22"
+method: PUT
+body:
+  type: json
+  content: >-
+    {
+        "text": "Updated comment text with more details about the reproduction steps."
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{jwt_token}}"
+order: 3247499685518096

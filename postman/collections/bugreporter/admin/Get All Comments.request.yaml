@@ -1,0 +1,9 @@
+$kind: http-request
+name: Get All Comments
+url: "{{admin}}/comments"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{jwt_token}}"
+order: 4500000000000002

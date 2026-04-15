@@ -1,0 +1,9 @@
+$kind: http-request
+name: Delete Comment
+url: "{{comments}}/21"
+method: DELETE
+auth:
+  type: bearer
+  credentials:
+    token: "{{jwt_token}}"
+order: 3247499685518095

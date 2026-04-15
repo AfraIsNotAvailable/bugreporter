@@ -1,0 +1,11 @@
+$kind: http-request
+name: Create Comment - No Auth
+url: "{{comments}}/bug/1"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "text": "This comment has no auth token and should return 403."
+    }
+order: 3247499685518100

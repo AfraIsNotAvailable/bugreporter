@@ -1,0 +1,13 @@
+$kind: http-request
+name: Create User - Duplicate Username
+url: "{{users}}"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "username": "admin",
+        "email": "duplicate@example.com",
+        "password": "password123"
+    }
+order: 4174919253048781

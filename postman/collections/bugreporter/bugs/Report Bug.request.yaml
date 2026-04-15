@@ -1,0 +1,17 @@
+$kind: http-request
+name: Report Bug
+url: "{{bugs}}"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "title": "Login button unresponsive on mobile",
+        "text": "When tapping the login button on iOS Safari, nothing happens. The form does not submit.",
+        "imageUrl": ""
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{jwt_token}}"
+order: 1775141554878

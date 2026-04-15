@@ -1,12 +1,13 @@
 $kind: http-request
-name: Get Bug
+name: Get Bug Comments
 url: "{{comments}}/bug/1"
 method: GET
 body:
   type: json
   content: ""
 auth:
-  type: bearer
   credentials:
-    token: "{{jwt_token}}"
+    - key: token
+      value: "{{jwt_token}}"
+  type: bearer
 order: 1774083008305
