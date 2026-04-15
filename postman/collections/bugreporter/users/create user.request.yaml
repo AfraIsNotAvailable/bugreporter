@@ -1,0 +1,13 @@
+$kind: http-request
+name: Create User
+url: "{{users}}"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "username": "newuser",
+        "email": "newuser@example.com",
+        "password": "password123"
+    }
+order: 1775140913245

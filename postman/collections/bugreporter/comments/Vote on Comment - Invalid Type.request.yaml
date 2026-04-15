@@ -1,0 +1,15 @@
+$kind: http-request
+name: Vote on Comment - Invalid Type
+url: "{{comments}}/1/vote"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "voteType": "INVALID"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{jwt_token}}"
+order: 3247499685518098

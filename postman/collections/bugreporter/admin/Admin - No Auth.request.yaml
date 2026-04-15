@@ -1,0 +1,5 @@
+$kind: http-request
+name: Admin - No Auth
+url: "{{admin}}/users"
+method: GET
+order: 4500000000000006

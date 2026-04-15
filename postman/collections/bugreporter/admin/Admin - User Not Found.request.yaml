@@ -1,0 +1,9 @@
+$kind: http-request
+name: Admin - User Not Found
+url: "{{admin}}/users/99999/ban?banned=true"
+method: PUT
+auth:
+  type: bearer
+  credentials:
+    token: "{{jwt_token}}"
+order: 4500000000000007

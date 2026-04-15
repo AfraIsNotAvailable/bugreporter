@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Bug
+url: "{{bugs}}/1"
+method: PUT
+body:
+  type: json
+  content: |-
+    {
+        "title": "Login button unresponsive on mobile (updated)",
+        "text": "Reproduced on iOS 17 Safari and Chrome. The form submit event is never fired.",
+        "imageUrl": ""
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{jwt_token}}"
+order: 1775141554880

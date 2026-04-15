@@ -1,13 +1,14 @@
 $kind: http-request
-name: Login
-url: "{{auth}}/login"
+name: Register
+url: "{{auth}}/register"
 method: POST
 body:
   type: json
   content: |-
     {
-        "username": "admin",
-        "password": "admin"
+        "username": "newuser",
+        "email": "newuser@newuser.com",
+        "password": "newuser"
     }
 scripts:
   - type: afterResponse
@@ -21,4 +22,4 @@ scripts:
           console.log("No token found in response.");
       }
     language: text/javascript
-order: 3040364556384086
+order: 369909077556812

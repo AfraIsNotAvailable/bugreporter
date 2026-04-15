@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Bug - Not Author
+url: "{{bugs}}/1"
+method: PUT
+body:
+  type: json
+  content: |-
+    {
+        "title": "Unauthorized update attempt",
+        "text": "This should return 403 if the token belongs to a user who is not the bug author (and is not MODERATOR or ADMIN).",
+        "imageUrl": ""
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{jwt_token}}"
+order: 1775141554888

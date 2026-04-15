@@ -1,0 +1,15 @@
+$kind: http-request
+name: New Comment for Bug
+url: "{{comments}}/bug/1"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "text": "New comment for testing purposes"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{jwt_token}}"
+order: 681092608367491

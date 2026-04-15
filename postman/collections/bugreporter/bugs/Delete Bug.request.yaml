@@ -1,0 +1,9 @@
+$kind: http-request
+name: Delete Bug
+url: "{{bugs}}/1"
+method: DELETE
+auth:
+  type: bearer
+  credentials:
+    token: "{{jwt_token}}"
+order: 1775141554881

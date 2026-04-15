@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Bug Comments - Not Found
+url: "{{comments}}/bug/99999"
+method: GET
+order: 3247499685518099

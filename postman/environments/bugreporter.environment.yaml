@@ -3,10 +3,19 @@ values:
   - key: bugreporter_api
     value: ''
     enabled: true
+  - key: auth
+    value: ''
+    enabled: true
+  - key: bugs
+    value: ''
+    enabled: true
   - key: comments
     value: ''
     enabled: true
-  - key: auth
+  - key: users
+    value: ''
+    enabled: true
+  - key: admin
     value: ''
     enabled: true
   - key: jwt_token

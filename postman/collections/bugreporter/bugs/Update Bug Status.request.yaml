@@ -1,0 +1,11 @@
+$kind: http-request
+name: Update Bug Status
+url: "{{bugs}}/1/status?status=IN_PROGRESS"
+method: PATCH
+queryParams:
+  status: IN_PROGRESS
+auth:
+  type: bearer
+  credentials:
+    token: "{{jwt_token}}"
+order: 1775141554882

@@ -1,0 +1,5 @@
+$kind: http-request
+name: Ban User
+url: "{{users}}/1/ban"
+method: PUT
+order: 4174919253048779
