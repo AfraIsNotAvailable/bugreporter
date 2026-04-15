@@ -5,9 +5,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -32,5 +35,30 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidVoteTypeException.class)
     public ResponseEntity<String> handleInvalidVoteTypeException(InvalidVoteTypeException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST); // 400
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<String> handleInvalidCredentialsException(InvalidCredentialsException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED); // 401
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<String> handleConflictException(ConflictException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT); // 409
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<String> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        Class<?> type = ex.getRequiredType();
+        if (type != null && type.isEnum()) {
+            String validValues = Arrays.stream(type.getEnumConstants())
+                    .map(Object::toString)
+                    .collect(Collectors.joining(", "));
+            return new ResponseEntity<>(
+                    "Invalid value '" + ex.getValue() + "' for parameter '" + ex.getName() + "'. Allowed values: " + validValues,
+                    HttpStatus.BAD_REQUEST // 400
+            );
+        }
+        return new ResponseEntity<>("Invalid value for parameter '" + ex.getName() + "'", HttpStatus.BAD_REQUEST);
     }
 }

@@ -3,6 +3,7 @@ package com.group11.bugreporter.service;
 import com.group11.bugreporter.dto.request.UserRequest;
 import com.group11.bugreporter.dto.response.UserResponse;
 import com.group11.bugreporter.entity.User;
+import com.group11.bugreporter.exception.ConflictException;
 import com.group11.bugreporter.exception.ResourceNotFoundException;
 import com.group11.bugreporter.entity.enums.Role;
 import com.group11.bugreporter.repository.UserRepository;
@@ -51,12 +52,12 @@ public class UserServiceImpl implements UserService {
     public UserResponse createUser(UserRequest dto) {
         User user = new User();
         if (userRepository.existsByUsername(dto.getUsername())) {
-            throw new IllegalArgumentException("Username already in use");
+            throw new ConflictException("Username already in use");
         }
         user.setUsername(dto.getUsername());
         //trebuie sa verific inainte daca email-u ii duplicat
         if (userRepository.existsByEmail(dto.getEmail())) {
-            throw new IllegalArgumentException("Email already in use");
+            throw new ConflictException("Email already in use");
         }
         user.setEmail(dto.getEmail());
         //partea asta poate o modific (ca sa fac un cryping la parole)
@@ -91,14 +92,14 @@ public class UserServiceImpl implements UserService {
 
         if (dto.getUsername() != null && !dto.getUsername().equals(user.getUsername())) {
             if (userRepository.existsByUsername(dto.getUsername())) {
-                throw new IllegalArgumentException("Username already in use");
+                throw new ConflictException("Username already in use");
             }
             user.setUsername(dto.getUsername());
         }
 
         if (dto.getEmail() != null && !dto.getEmail().equals(user.getEmail())) {
             if (userRepository.existsByEmail(dto.getEmail())) {
-                throw new IllegalArgumentException("Email already in use");
+                throw new ConflictException("Email already in use");
             }
             user.setEmail(dto.getEmail());
         }

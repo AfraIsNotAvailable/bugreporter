@@ -24,7 +24,7 @@ public class CommentResponse {
                 .text(comment.getText())
                 .imageUrl(comment.getImageUrl())
                 .authorId(comment.getAuthor().getId())
-                // .authorUsername(comment.getAuthor().getUsername()) // todo: add username to User entity and uncomment this line
+                .authorUsername(comment.getAuthor().getUsername())
                 .createdAt(comment.getCreatedAt())
                 .score(comment.getScore())
                 .build();

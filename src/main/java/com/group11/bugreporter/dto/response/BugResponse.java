@@ -19,17 +19,22 @@ public class BugResponse {
     private Set<String> tags;
 
     public static BugResponse fromEntity(Bug bug) {
+        if (bug == null) return null;
+
         return BugResponse.builder()
                 .id(bug.getId())
                 .title(bug.getTitle())
                 .text(bug.getText())
                 .imageUrl(bug.getImageUrl())
-                .status(bug.getStatus().name())
-                .createdAt(bug.getCreatedAt())
-                .authorUsername(bug.getAuthor().getUsername())
+                // DEFAULT: Daca statusul e null, scrie "UNKNOWN"
+                .status(bug.getStatus() != null ? bug.getStatus().name() : "PENDING")
+                // DEFAULT: Daca n-are data, pune ora curenta (sau lasa null daca vrei)
+                .createdAt(bug.getCreatedAt() != null ? bug.getCreatedAt() : LocalDateTime.now())
+                // DEFAULT: Daca n-are autor, scrie "Anonymous"
+                .authorUsername(bug.getAuthor() != null ? bug.getAuthor().getUsername() : "Anonymous")
                 .tags(bug.getTags() != null ? bug.getTags().stream()
-                        .map(tag -> tag.getName())
-                        .collect(java.util.stream.Collectors.toSet()) : java.util.Collections.emptySet())
+                                              .map(tag -> tag.getName())
+                                              .collect(java.util.stream.Collectors.toSet()) : java.util.Collections.emptySet())
                 .build();
     }
 }

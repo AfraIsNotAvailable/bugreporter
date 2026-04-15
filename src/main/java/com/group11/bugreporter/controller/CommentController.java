@@ -140,6 +140,11 @@ public class CommentController {
             throw new ForbiddenException("Authentication is required");
         }
 
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof User authenticatedUser) {
+            return authenticatedUser;
+        }
+
         String username = authentication.getName();
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new ForbiddenException("Authenticated user not found: " + username));

@@ -57,6 +57,12 @@ class BugServiceTest {
 
         // Autorul are voie
         assertDoesNotThrow(() -> bugService.deleteBug(10L, 1L, Role.USER));
+
+        // Admin-ul are voie indiferent de autor
+        assertDoesNotThrow(() -> bugService.deleteBug(10L, 2L, Role.ADMIN));
+
+        // Moderatorul are voie indiferent de autor
+        assertDoesNotThrow(() -> bugService.deleteBug(10L, 2L, Role.MODERATOR));
     }
 
     @Test

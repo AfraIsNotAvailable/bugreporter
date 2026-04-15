@@ -4,6 +4,8 @@ import com.group11.bugreporter.dto.request.LoginRequest;
 import com.group11.bugreporter.dto.request.RegisterRequest;
 import com.group11.bugreporter.entity.User;
 import com.group11.bugreporter.entity.enums.Role;
+import com.group11.bugreporter.exception.ConflictException;
+import com.group11.bugreporter.exception.InvalidCredentialsException;
 import com.group11.bugreporter.repository.UserRepository;
 import com.group11.bugreporter.security.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +21,10 @@ public class AuthService {
 
     public String authenticate(LoginRequest request) {
         User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid password");
+            throw new InvalidCredentialsException("Invalid username or password");
         }
 
         return jwtService.generateToken(user.getUsername());
@@ -30,11 +32,11 @@ public class AuthService {
 
     public String register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username is already taken");
+            throw new ConflictException("Username is already taken");
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email is already in use");
+            throw new ConflictException("Email is already in use");
         }
 
         User user = User.builder()

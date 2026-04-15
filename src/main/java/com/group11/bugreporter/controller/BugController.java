@@ -1,11 +1,13 @@
 package com.group11.bugreporter.controller;
 
 import com.group11.bugreporter.dto.request.BugRequest;
+import com.group11.bugreporter.dto.request.LoginRequest;
 import com.group11.bugreporter.dto.response.BugResponse;
 import com.group11.bugreporter.entity.Bug;
 import com.group11.bugreporter.entity.User;
 import com.group11.bugreporter.entity.enums.BugStatus;
 import com.group11.bugreporter.exception.ForbiddenException;
+import com.group11.bugreporter.exception.ResourceNotFoundException;
 import com.group11.bugreporter.repository.UserRepository;
 import com.group11.bugreporter.service.BugService;
 import jakarta.validation.Valid;
@@ -32,9 +34,12 @@ public class BugController {
     @PostMapping
     public ResponseEntity<BugResponse> reportBug(
             @Valid @RequestBody BugRequest request,
+//            @RequestBody LoginRequest loginRequest
             Authentication authentication
     ) {
+//        User user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow(() -> new ResourceNotFoundException("user not found"));
         User user = resolveAuthenticatedUser(authentication);
+//        User user = userRepository.findById(resolveAuthenticatedUser(authentication))
         Bug bug = bugService.createBug(request, user.getId());
         return new ResponseEntity<>(BugResponse.fromEntity(bug), HttpStatus.CREATED);
     }
@@ -69,7 +74,7 @@ public class BugController {
             Authentication authentication) {
 
         User requestingUser = resolveAuthenticatedUser(authentication);
-        Bug updated = bugService.updateBug(id, request, requestingUser.getId());
+        Bug updated = bugService.updateBug(id, request, requestingUser.getId(), requestingUser.getRole());
         return ResponseEntity.ok(BugResponse.fromEntity(updated));
     }
 
@@ -108,6 +113,11 @@ public class BugController {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new ForbiddenException("Authentication is required");
         }
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof User authenticatedUser) {
+            return authenticatedUser;
+        }
+
         String username = authentication.getName();
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new ForbiddenException("Authenticated user not found: " + username));
@@ -129,12 +139,12 @@ public class BugController {
             @RequestParam(required = false) String tag,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) boolean mine,
+            @RequestParam(required = false) Boolean mine,
             Authentication auth
     ) {
         List<Bug> results;
 
-        if (mine) {
+        if (Boolean.TRUE.equals(mine)) {
             User user = resolveAuthenticatedUser(auth);
             results = bugService.getBugsByAuthor(user.getId());
         } else if (tag != null) {
@@ -156,7 +166,7 @@ public class BugController {
             Authentication authentication
     ) {
         User requestingUser = resolveAuthenticatedUser(authentication);
-        Bug resolved = bugService.resolveBug(id, requestingUser.getId());
+        Bug resolved = bugService.resolveBug(id, requestingUser.getId(), requestingUser.getRole());
         return ResponseEntity.ok(BugResponse.fromEntity(resolved));
     }
 }

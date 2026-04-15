@@ -100,7 +100,7 @@ class BugControllerTest {
                 .build();
 
         when(userRepository.findByUsername("catalin")).thenReturn(Optional.of(testUser));
-        when(bugService.resolveBug(1L, 1L)).thenReturn(resolvedBug);
+        when(bugService.resolveBug(eq(1L), eq(1L), any())).thenReturn(resolvedBug);
 
         ResponseEntity<BugResponse> response = bugController.resolveBug(1L, auth);
 

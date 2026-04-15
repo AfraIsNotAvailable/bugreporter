@@ -20,25 +20,26 @@ public class Bug {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column
     private String title;
 
-    @Column(nullable = false, length = 5000)
+    @Column(length = 5000)
     private String text;
 
-    @Column(name = "image_url")
+    @Column(name = "image_url", nullable = true)
     private String imageUrl;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private BugStatus status;
+    @Column
+    @Builder.Default
+    private BugStatus status = BugStatus.OPEN;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id", nullable = false)
+    @JoinColumn
     private User author;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -47,5 +48,6 @@ public class Bug {
             joinColumns = @JoinColumn(name = "bug_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
+    @Builder.Default
     private Set<Tag> tags = new HashSet<>();
 }

@@ -4,6 +4,7 @@ import com.group11.bugreporter.dto.request.UserRequest;
 import com.group11.bugreporter.dto.response.UserResponse;
 import com.group11.bugreporter.entity.User;
 import com.group11.bugreporter.entity.enums.Role;
+import com.group11.bugreporter.exception.ConflictException;
 import com.group11.bugreporter.exception.ResourceNotFoundException;
 import com.group11.bugreporter.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -94,8 +95,8 @@ class UserServiceImplTest {
     void shouldThrowWhenUsernameAlreadyExistsOnCreate() {
         when(userRepository.existsByUsername("alex")).thenReturn(true);
 
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
+        ConflictException ex = assertThrows(
+                ConflictException.class,
                 () -> userService.createUser(userRequest)
         );
 
@@ -109,8 +110,8 @@ class UserServiceImplTest {
         when(userRepository.existsByUsername("alex")).thenReturn(false);
         when(userRepository.existsByEmail("alex@test.com")).thenReturn(true);
 
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
+        ConflictException ex = assertThrows(
+                ConflictException.class,
                 () -> userService.createUser(userRequest)
         );
 

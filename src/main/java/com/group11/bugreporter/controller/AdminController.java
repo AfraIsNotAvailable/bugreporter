@@ -4,6 +4,7 @@ import com.group11.bugreporter.entity.Bug;
 import com.group11.bugreporter.entity.Comment;
 import com.group11.bugreporter.entity.User;
 import com.group11.bugreporter.entity.enums.Role;
+import com.group11.bugreporter.exception.ResourceNotFoundException;
 import com.group11.bugreporter.repository.BugRepository;
 import com.group11.bugreporter.repository.CommentRepository;
 import com.group11.bugreporter.repository.UserRepository;
@@ -64,7 +65,7 @@ public class AdminController {
     @PutMapping("/users/{userId}/ban")
     public ResponseEntity<String> setUserBanStatus(@PathVariable Long userId, @RequestParam boolean banned) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         user.setBanned(banned);
         userRepository.save(user);
@@ -82,7 +83,7 @@ public class AdminController {
     @PutMapping("/users/{userId}/role")
     public ResponseEntity<String> updateUserRole(@PathVariable Long userId, @RequestParam Role role) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         user.setRole(role);
         userRepository.save(user);

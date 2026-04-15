@@ -59,10 +59,12 @@ public class BugService {
      * Actualizeaza continutul unui bug report
      */
     @Transactional
-    public Bug updateBug(Long id, BugRequest dto, Long requestingUserId) {
+    public Bug updateBug(Long id, BugRequest dto, Long requestingUserId, Role requestingUserRole) {
         Bug bug = getBugById(id);
 
-        if (!bug.getAuthor().getId().equals(requestingUserId)) {
+        boolean isAuthor = bug.getAuthor().getId().equals(requestingUserId);
+        boolean isPrivileged = requestingUserRole == Role.ADMIN || requestingUserRole == Role.MODERATOR;
+        if (!isAuthor && !isPrivileged) {
             throw new ForbiddenException("You are not the author of this bug report");
         }
 
@@ -95,10 +97,10 @@ public class BugService {
         Bug bug = getBugById(id);
 
         boolean isAuthor = bug.getAuthor().getId().equals(requestingUserId);
-        boolean isAdmin = requestingUserRole == Role.ADMIN;
+        boolean isPrivileged = requestingUserRole == Role.ADMIN || requestingUserRole == Role.MODERATOR;
 
-        if (!isAuthor && !isAdmin) {
-            throw new ForbiddenException("Only the author or an admin can delete this bug report");
+        if (!isAuthor && !isPrivileged) {
+            throw new ForbiddenException("Only the author, a moderator, or an admin can delete this bug report");
         }
 
         bugRepository.delete(bug);
@@ -142,10 +144,13 @@ public class BugService {
     }
 
     @Transactional
-    public Bug resolveBug(Long bugId, Long requestingUserId) {
+    public Bug resolveBug(Long bugId, Long requestingUserId, Role requestingUserRole) {
         Bug bug = getBugById(bugId);
-        if (!bug.getAuthor().getId().equals(requestingUserId)) {
-            throw new ForbiddenException("Doar autorul bug-ului poate confirma rezolvarea acestuia.");
+
+        boolean isAuthor = bug.getAuthor().getId().equals(requestingUserId);
+        boolean isPrivileged = requestingUserRole == Role.ADMIN || requestingUserRole == Role.MODERATOR;
+        if (!isAuthor && !isPrivileged) {
+            throw new ForbiddenException("Only the author, a moderator, or an admin can resolve this bug report");
         }
 
         bug.setStatus(BugStatus.FIXED);

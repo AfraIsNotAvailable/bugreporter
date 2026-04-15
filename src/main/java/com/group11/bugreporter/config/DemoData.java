@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group11.bugreporter.entity.Bug;
 import com.group11.bugreporter.entity.Comment;
 import com.group11.bugreporter.entity.User;
+import com.group11.bugreporter.entity.enums.BugStatus;
 import com.group11.bugreporter.entity.enums.Role;
 import com.group11.bugreporter.repository.BugRepository;
 import com.group11.bugreporter.repository.CommentRepository;
@@ -64,7 +65,7 @@ public class DemoData {
     public void loadDemoData() {
         List<Comment> demoComments = getDemoCommentsFromJson();
         Map<Long, Long> authorIdMapping = seedUsers(demoComments);
-        Map<Long, Long> bugIdMapping = seedBugs(demoComments);
+        Map<Long, Long> bugIdMapping = seedBugs(demoComments, authorIdMapping);
         seedComments(demoComments, authorIdMapping, bugIdMapping);
     }
 
@@ -137,18 +138,24 @@ public class DemoData {
      *
      * Returneaza mapare "sourceId -> persistedId" pentru referinte ulterioare.
      */
-    private Map<Long, Long> seedBugs(List<Comment> demoComments) {
+    private Map<Long, Long> seedBugs(List<Comment> demoComments, Map<Long, Long> authorIdMapping) {
         List<Bug> bugsFromJson = getDemoBugsFromJson();
+        Long fallbackAuthorId = resolveFallbackAuthorId(authorIdMapping);
+
+        if (fallbackAuthorId == null) {
+            log.warn("Skipping demo bug seeding because no author exists yet.");
+            return Map.of();
+        }
 
         Map<Long, Bug> desiredBugsById = new LinkedHashMap<>();
         for (Bug bug : bugsFromJson) {
             if (bug != null && bug.getId() != null) {
-                desiredBugsById.put(bug.getId(), bug);
+                desiredBugsById.put(bug.getId(), normalizeBug(bug, bug.getId(), authorIdMapping, fallbackAuthorId));
             }
         }
 
         extractBugIds(demoComments).forEach(bugId ->
-                desiredBugsById.putIfAbsent(bugId, buildFallbackBug(bugId))
+                desiredBugsById.putIfAbsent(bugId, buildFallbackBug(bugId, fallbackAuthorId))
         );
 
         if (desiredBugsById.isEmpty()) {
@@ -158,13 +165,14 @@ public class DemoData {
 
         Map<Long, Long> bugIdMapping = new LinkedHashMap<>();
         int insertedBugs = 0;
-        for (Long sourceId : desiredBugsById.keySet()) {
+        for (Map.Entry<Long, Bug> entry : desiredBugsById.entrySet()) {
+            Long sourceId = entry.getKey();
             if (bugRepository.existsById(sourceId)) {
                 bugIdMapping.put(sourceId, sourceId);
                 continue;
             }
 
-            Bug saved = bugRepository.save(new Bug());
+            Bug saved = bugRepository.save(entry.getValue());
             insertedBugs++;
             bugIdMapping.put(sourceId, saved.getId());
         }
@@ -294,10 +302,45 @@ public class DemoData {
     /**
      * Construieste un bug fallback minimal pentru un bugId referit in comentarii.
      */
-    private Bug buildFallbackBug(Long bugId) {
+    private Bug buildFallbackBug(Long bugId, Long fallbackAuthorId) {
         Bug bug = new Bug();
         bug.setId(null);
+        bug.setTitle("Demo bug #" + bugId);
+        bug.setText("Auto-generated demo bug used to keep comment references valid.");
+        bug.setStatus(BugStatus.OPEN);
+        bug.setAuthor(userRepository.getReferenceById(fallbackAuthorId));
         return bug;
+    }
+
+    /**
+     * Normalizeaza un bug citit din JSON astfel incat sa respecte constrangerile entitatii.
+     */
+    private Bug normalizeBug(Bug bug, Long fallbackId, Map<Long, Long> authorIdMapping, Long fallbackAuthorId) {
+        Long sourceAuthorId = bug.getAuthor() != null ? bug.getAuthor().getId() : null;
+        Long mappedAuthorId = sourceAuthorId != null ? authorIdMapping.get(sourceAuthorId) : null;
+
+        Bug normalized = new Bug();
+        normalized.setId(null);
+        normalized.setTitle(hasText(bug.getTitle()) ? bug.getTitle() : "Demo bug #" + fallbackId);
+        normalized.setText(hasText(bug.getText()) ? bug.getText() : "Auto-generated demo bug used to keep comment references valid.");
+        normalized.setImageUrl(hasText(bug.getImageUrl()) ? bug.getImageUrl() : null);
+        normalized.setStatus(bug.getStatus() != null ? bug.getStatus() : BugStatus.OPEN);
+        normalized.setAuthor(userRepository.getReferenceById(mappedAuthorId != null ? mappedAuthorId : fallbackAuthorId));
+        return normalized;
+    }
+
+    /**
+     * Alege un autor fallback pentru bug-uri demo cand JSON-ul nu specifica autori valizi.
+     */
+    private Long resolveFallbackAuthorId(Map<Long, Long> authorIdMapping) {
+        if (!authorIdMapping.isEmpty()) {
+            return authorIdMapping.values().iterator().next();
+        }
+
+        return userRepository.findAll().stream()
+                .map(User::getId)
+                .findFirst()
+                .orElse(null);
     }
 
     /**
