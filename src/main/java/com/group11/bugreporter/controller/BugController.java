@@ -34,6 +34,9 @@ public class BugController {
             @Valid @RequestBody BugRequest request,
             Authentication authentication
     ) {
+
+        System.out.println("AUTH: " + authentication); // ← AICI
+
         User user = resolveAuthenticatedUser(authentication);
         Bug bug = bugService.createBug(request, user.getId());
         return new ResponseEntity<>(BugResponse.fromEntity(bug), HttpStatus.CREATED);
@@ -69,16 +72,16 @@ public class BugController {
             Authentication authentication) {
 
         User requestingUser = resolveAuthenticatedUser(authentication);
-        Bug updated = bugService.updateBug(id, request, requestingUser.getId());
+        Bug updated = bugService.updateBug(id, request, requestingUser.getId(), requestingUser.getRole());
         return ResponseEntity.ok(BugResponse.fromEntity(updated));
     }
 
     /**
      * schimba statusul bug -ului
-     * valabil doar pentru Moderatori si admini
+     * valabil doar pentru Moderatori
      */
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MODERATOR')")
     public ResponseEntity<BugResponse> updateStatus(
             @PathVariable Long id,
             @RequestParam BugStatus status

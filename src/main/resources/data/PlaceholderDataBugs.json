@@ -1,8 +1,29 @@
 [
-  { "id": 101 },
-  { "id": 102 },
-  { "id": 103 },
-  { "id": 104 },
-  { "id": 105 }
+  {
+    "id": 101,
+    "title": "Login button not working",
+    "text": "Clicking the login button does nothing for some users.",
+    "status": "OPEN",
+    "author": {
+      "id": 3
+    }
+  },
+  {
+    "id": 102,
+    "title": "Dashboard crashes on load",
+    "text": "Dashboard throws an exception when fetching data.",
+    "status": "IN_PROGRESS",
+    "author": {
+      "id": 4
+    }
+  },
+  {
+    "id": 103,
+    "title": "Image upload returns error",
+    "text": "Uploading images results in HTTP 500 error.",
+    "status": "FIXED",
+    "author": {
+      "id": 5
+    }
+  }
 ]
-

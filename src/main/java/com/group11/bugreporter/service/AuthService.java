@@ -21,6 +21,11 @@ public class AuthService {
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        //verific daca user-u ii banat inainte de toate
+        if (user.isBanned()) {
+            throw new RuntimeException("User is banned");
+        }
+
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid password");
         }

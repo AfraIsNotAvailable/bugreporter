@@ -59,17 +59,21 @@ public class BugService {
      * Actualizeaza continutul unui bug report
      */
     @Transactional
-    public Bug updateBug(Long id, BugRequest dto, Long requestingUserId) {
+    public Bug updateBug(Long id, BugRequest request, Long userId, Role role) {
         Bug bug = getBugById(id);
 
-        if (!bug.getAuthor().getId().equals(requestingUserId)) {
-            throw new ForbiddenException("You are not the author of this bug report");
+        boolean isAuthor = bug.getAuthor().getId().equals(userId);
+        boolean isModerator = role == Role.MODERATOR;
+
+        if (!isAuthor && !isModerator) {
+            throw new ForbiddenException("You are not allowed to edit this bug");
         }
 
-        bug.setTitle(dto.getTitle());
-        bug.setText(dto.getText());
-        if (dto.getImageUrl() != null) {
-            bug.setImageUrl(dto.getImageUrl());
+        bug.setTitle(request.getTitle());
+        bug.setText(request.getText());
+
+        if (request.getImageUrl() != null) {
+            bug.setImageUrl(request.getImageUrl());
         }
 
         return bugRepository.save(bug);
@@ -95,10 +99,10 @@ public class BugService {
         Bug bug = getBugById(id);
 
         boolean isAuthor = bug.getAuthor().getId().equals(requestingUserId);
-        boolean isAdmin = requestingUserRole == Role.ADMIN;
+        boolean isModerator = requestingUserRole == Role.MODERATOR;
 
-        if (!isAuthor && !isAdmin) {
-            throw new ForbiddenException("Only the author or an admin can delete this bug report");
+        if (!isAuthor && !isModerator) {
+            throw new ForbiddenException("Only the author or a moderator can delete this bug report");
         }
 
         bugRepository.delete(bug);
