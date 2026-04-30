@@ -3,7 +3,7 @@
     "id": 1,
     "username": "ana",
     "email": "ana@example.com",
-    "password": "$2a$10$rqvTH8sWG7dnD6XJ1kD1D.0hP6Q5XxSxrnPfWZ5fFKj4R.AH4fA7i",
+    "password": "ana-demo-pass",
     "role": "ADMIN",
     "banned": false,
     "createdAt": "2026-03-01T09:00:00"
@@ -12,7 +12,7 @@
     "id": 2,
     "username": "mihai",
     "email": "mihai@example.com",
-    "password": "$2a$10$rqvTH8sWG7dnD6XJ1kD1D.0hP6Q5XxSxrnPfWZ5fFKj4R.AH4fA7i",
+    "password": "mihai-demo-pass",
     "role": "MODERATOR",
     "banned": false,
     "createdAt": "2026-03-02T10:30:00"
@@ -21,7 +21,7 @@
     "id": 3,
     "username": "elena",
     "email": "elena@example.com",
-    "password": "$2a$10$rqvTH8sWG7dnD6XJ1kD1D.0hP6Q5XxSxrnPfWZ5fFKj4R.AH4fA7i",
+    "password": "elena-demo-pass",
     "role": "USER",
     "banned": false,
     "createdAt": "2026-03-03T11:15:00"
@@ -30,7 +30,7 @@
     "id": 4,
     "username": "rares",
     "email": "rares@example.com",
-    "password": "$2a$10$rqvTH8sWG7dnD6XJ1kD1D.0hP6Q5XxSxrnPfWZ5fFKj4R.AH4fA7i",
+    "password": "rares-demo-pass",
     "role": "USER",
     "banned": false,
     "createdAt": "2026-03-04T08:45:00"
@@ -39,10 +39,9 @@
     "id": 5,
     "username": "ioana",
     "email": "ioana@example.com",
-    "password": "$2a$10$rqvTH8sWG7dnD6XJ1kD1D.0hP6Q5XxSxrnPfWZ5fFKj4R.AH4fA7i",
+    "password": "ioana-demo-pass",
     "role": "USER",
     "banned": false,
     "createdAt": "2026-03-05T14:20:00"
   }
 ]
-

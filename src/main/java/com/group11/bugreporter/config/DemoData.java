@@ -1,13 +1,16 @@
 package com.group11.bugreporter.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.group11.bugreporter.dto.request.RegisterRequest;
 import com.group11.bugreporter.entity.Bug;
 import com.group11.bugreporter.entity.Comment;
 import com.group11.bugreporter.entity.User;
+import com.group11.bugreporter.entity.enums.BugStatus;
 import com.group11.bugreporter.entity.enums.Role;
 import com.group11.bugreporter.repository.BugRepository;
 import com.group11.bugreporter.repository.CommentRepository;
 import com.group11.bugreporter.repository.UserRepository;
+import com.group11.bugreporter.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
@@ -52,6 +55,7 @@ public class DemoData {
     private final UserRepository userRepository;
     private final BugRepository bugRepository;
     private final ObjectMapper objectMapper;
+    private final AuthService authService;
 
     /**
      * Incarca datele demo intr-o tranzactie:
@@ -63,8 +67,9 @@ public class DemoData {
     @Transactional
     public void loadDemoData() {
         List<Comment> demoComments = getDemoCommentsFromJson();
-        Map<Long, Long> authorIdMapping = seedUsers(demoComments);
-        Map<Long, Long> bugIdMapping = seedBugs(demoComments, authorIdMapping);
+        List<Bug> demoBugs = getDemoBugsFromJson();
+        Map<Long, Long> authorIdMapping = seedUsers(demoComments, demoBugs);
+        Map<Long, Long> bugIdMapping = seedBugs(demoBugs, demoComments, authorIdMapping);
         seedComments(demoComments, authorIdMapping, bugIdMapping);
     }
 
@@ -77,12 +82,19 @@ public class DemoData {
      *
      * Returneaza mapare "sourceId -> persistedId" pentru referinte ulterioare.
      */
-    private Map<Long, Long> seedUsers(List<Comment> demoComments) {
+    private Map<Long, Long> seedUsers(List<Comment> demoComments, List<Bug> demoBugs) {
         List<User> usersFromJson = getDemoUsersFromJson();
 
+        // ID-urile de seed provenite din JSON vor fi inregistrate prin AuthService,
+        // astfel incat parola este hash-uita cu acelasi encoder ca in fluxul de productie
+        // si utilizatorul poate face login cu parola din JSON.
+        Map<Long, String> jsonPlaintextPasswords = new LinkedHashMap<>();
         Map<Long, User> desiredUsersById = new LinkedHashMap<>();
         for (User user : usersFromJson) {
             if (user != null && user.getId() != null) {
+                if (hasText(user.getPassword())) {
+                    jsonPlaintextPasswords.put(user.getId(), user.getPassword());
+                }
                 desiredUsersById.put(user.getId(), normalizeUser(user, user.getId()));
             }
         }
@@ -91,10 +103,13 @@ public class DemoData {
                 desiredUsersById.putIfAbsent(authorId, buildFallbackUser(authorId))
         );
 
+        extractBugAuthorIds(demoBugs).forEach(authorId ->
+                desiredUsersById.putIfAbsent(authorId, buildFallbackUser(authorId))
+        );
+
         if (desiredUsersById.isEmpty()) {
             log.info("Skipping demo user seeding because no desired users were found.");
             return Map.of();
-
         }
 
         Map<Long, Long> userIdMapping = new LinkedHashMap<>();
@@ -116,7 +131,13 @@ public class DemoData {
                 continue;
             }
 
-            User saved = userRepository.save(template);
+            String plaintext = jsonPlaintextPasswords.get(sourceId);
+            User saved;
+            if (plaintext != null) {
+                saved = registerDemoUser(template, plaintext);
+            } else {
+                saved = userRepository.save(template);
+            }
             insertedUsers++;
             userIdMapping.put(sourceId, saved.getId());
         }
@@ -138,18 +159,16 @@ public class DemoData {
      *
      * Returneaza mapare "sourceId -> persistedId" pentru referinte ulterioare.
      */
-    private Map<Long, Long> seedBugs(List<Comment> demoComments, Map<Long, Long> authorIdMapping) {
-        List<Bug> bugsFromJson = getDemoBugsFromJson();
-
+    private Map<Long, Long> seedBugs(List<Bug> demoBugs, List<Comment> demoComments, Map<Long, Long> authorIdMapping) {
         Map<Long, Bug> desiredBugsById = new LinkedHashMap<>();
-        for (Bug bug : bugsFromJson) {
+        for (Bug bug : demoBugs) {
             if (bug != null && bug.getId() != null) {
                 desiredBugsById.put(bug.getId(), bug);
             }
         }
 
         extractBugIds(demoComments).forEach(bugId ->
-                desiredBugsById.putIfAbsent(bugId, buildFallbackBug(bugId, authorIdMapping))
+                desiredBugsById.putIfAbsent(bugId, buildFallbackBug(bugId))
         );
 
         if (desiredBugsById.isEmpty()) {
@@ -161,18 +180,20 @@ public class DemoData {
         int insertedBugs = 0;
         for (Map.Entry<Long, Bug> entry : desiredBugsById.entrySet()) {
             Long sourceId = entry.getKey();
+            Bug template = entry.getValue();
+
             if (bugRepository.existsById(sourceId)) {
                 bugIdMapping.put(sourceId, sourceId);
                 continue;
             }
 
-            Bug bug = normalizeBug(entry.getValue(), sourceId, authorIdMapping);
-            if (bug == null) {
-                log.warn("Skipping demo bug {} because required fields are missing or invalid.", sourceId);
+            Bug toPersist = normalizeBug(template, sourceId, authorIdMapping);
+            if (toPersist == null) {
+                log.warn("Skipping demo bug with sourceId={} because its author could not be resolved.", sourceId);
                 continue;
             }
 
-            Bug saved = bugRepository.save(bug);
+            Bug saved = bugRepository.save(toPersist);
             insertedBugs++;
             bugIdMapping.put(sourceId, saved.getId());
         }
@@ -255,6 +276,16 @@ public class DemoData {
     }
 
     /**
+     * Extrage toate ID-urile de autor prezente in lista de bug-uri.
+     */
+    private Set<Long> extractBugAuthorIds(List<Bug> bugs) {
+        return bugs.stream()
+                .filter(bug -> bug != null && bug.getAuthor() != null && bug.getAuthor().getId() != null)
+                .map(bug -> bug.getAuthor().getId())
+                .collect(Collectors.toSet());
+    }
+
+    /**
      * Extrage toate ID-urile de bug prezente in lista de comentarii.
      */
     private Set<Long> extractBugIds(List<Comment> comments) {
@@ -286,6 +317,41 @@ public class DemoData {
     }
 
     /**
+     * Inregistreaza un utilizator demo prin fluxul standard {@link AuthService#register},
+     * apoi aplica atributele suplimentare (role, banned, createdAt) care nu sunt
+     * setate de register (acesta fixeaza mereu Role.USER si banned=false).
+     *
+     * Astfel, parola plaintext din JSON este hash-uita cu encoder-ul de productie
+     * si utilizatorii seed pot face login prin /api/auth/login.
+     */
+    private User registerDemoUser(User template, String plaintextPassword) {
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername(template.getUsername());
+        request.setEmail(template.getEmail());
+        request.setPassword(plaintextPassword);
+        authService.register(request);
+
+        User registered = userRepository.findByUsername(template.getUsername())
+                .orElseThrow(() -> new IllegalStateException(
+                        "Demo user '" + template.getUsername() + "' was not persisted by AuthService.register"));
+
+        boolean dirty = false;
+        if (template.getRole() != null && template.getRole() != registered.getRole()) {
+            registered.setRole(template.getRole());
+            dirty = true;
+        }
+        if (registered.isBanned() != template.isBanned()) {
+            registered.setBanned(template.isBanned());
+            dirty = true;
+        }
+        if (template.getCreatedAt() != null) {
+            registered.setCreatedAt(template.getCreatedAt());
+            dirty = true;
+        }
+        return dirty ? userRepository.save(registered) : registered;
+    }
+
+    /**
      * Construieste un utilizator fallback pentru un userId referit in comentarii.
      */
     private User buildFallbackUser(Long userId) {
@@ -301,58 +367,45 @@ public class DemoData {
 
     /**
      * Construieste un bug fallback minimal pentru un bugId referit in comentarii.
+     * Autorul ramane null si va fi rezolvat catre primul autor disponibil la persistare.
      */
-    private Bug buildFallbackBug(Long bugId, Map<Long, Long> authorIdMapping) {
+    private Bug buildFallbackBug(Long bugId) {
         Bug bug = new Bug();
         bug.setId(null);
-        bug.setTitle("Demo bug " + bugId);
-        bug.setText("Autogenerated fallback bug for demo comments referencing source bug " + bugId + ".");
-        bug.setStatus(com.group11.bugreporter.entity.enums.BugStatus.OPEN);
-        Long fallbackAuthorId = authorIdMapping.values().stream().findFirst().orElse(null);
-        if (fallbackAuthorId != null) {
-            User author = new User();
-            author.setId(fallbackAuthorId);
-            bug.setAuthor(author);
-        }
+        bug.setTitle(DEMO_USERNAME_PREFIX + "bug-" + bugId);
+        bug.setText("Placeholder bug generated for comment referencing bugId=" + bugId + ".");
+        bug.setStatus(BugStatus.OPEN);
         return bug;
     }
 
     /**
-     * Normalizeaza un bug citit din JSON pentru a evita campuri invalide/lipsa.
+     * Normalizeaza un bug citit din JSON inainte de persistare.
      *
      * - id este fortat la null pentru insert nou;
-     * - title/text/status primesc fallback daca lipsesc;
-     * - autorul este mapat prin sourceId -> persistedId, nu prin ID-ul brut din JSON.
+     * - title/text primesc fallback daca lipsesc;
+     * - status implicit este OPEN;
+     * - autorul este rezolvat prin authorIdMapping; daca lipseste, se foloseste
+     *   primul autor disponibil din mapare (pentru bug-uri fallback fara autor);
+     * - daca nu exista niciun autor disponibil, returneaza null.
      */
-    private Bug normalizeBug(Bug bug, Long fallbackId, Map<Long, Long> authorIdMapping) {
-        if (bug == null) {
-            return null;
+    private Bug normalizeBug(Bug source, Long sourceId, Map<Long, Long> authorIdMapping) {
+        Long sourceAuthorId = source.getAuthor() != null ? source.getAuthor().getId() : null;
+        Long resolvedAuthorId = sourceAuthorId != null ? authorIdMapping.get(sourceAuthorId) : null;
+        if (resolvedAuthorId == null && !authorIdMapping.isEmpty()) {
+            resolvedAuthorId = authorIdMapping.values().iterator().next();
         }
-
-        Long sourceAuthorId = bug.getAuthor() != null ? bug.getAuthor().getId() : null;
-        Long mappedAuthorId = sourceAuthorId != null ? authorIdMapping.get(sourceAuthorId) : null;
-        if (mappedAuthorId == null) {
-            mappedAuthorId = sourceAuthorId != null && authorIdMapping.containsValue(sourceAuthorId)
-                    ? sourceAuthorId
-                    : authorIdMapping.values().stream().findFirst().orElse(null);
-        }
-        if (mappedAuthorId == null) {
+        if (resolvedAuthorId == null) {
             return null;
         }
 
         Bug normalized = new Bug();
         normalized.setId(null);
-        normalized.setTitle(hasText(bug.getTitle()) ? bug.getTitle() : "Demo bug " + fallbackId);
-        normalized.setText(hasText(bug.getText())
-                ? bug.getText()
-                : "Autogenerated fallback bug for demo source bug " + fallbackId + ".");
-        normalized.setImageUrl(bug.getImageUrl());
-        normalized.setStatus(bug.getStatus() != null
-                ? bug.getStatus()
-                : com.group11.bugreporter.entity.enums.BugStatus.OPEN);
-        normalized.setCreatedAt(bug.getCreatedAt());
-        normalized.setAuthor(userRepository.getReferenceById(mappedAuthorId));
-        normalized.setTags(bug.getTags() != null ? new java.util.HashSet<>(bug.getTags()) : new java.util.HashSet<>());
+        normalized.setTitle(hasText(source.getTitle()) ? source.getTitle() : DEMO_USERNAME_PREFIX + "bug-" + sourceId);
+        normalized.setText(hasText(source.getText()) ? source.getText() : "Placeholder bug text.");
+        normalized.setImageUrl(source.getImageUrl());
+        normalized.setStatus(source.getStatus() != null ? source.getStatus() : BugStatus.OPEN);
+        normalized.setCreatedAt(source.getCreatedAt());
+        normalized.setAuthor(userRepository.getReferenceById(resolvedAuthorId));
         return normalized;
     }
 

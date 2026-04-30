@@ -6,9 +6,9 @@ body:
   type: json
   content: |-
     {
-        "username": "newuser",
-        "email": "newuser@newuser.com",
-        "password": "newuser"
+        "username": "admin",
+        "email": "admin@newuser.com",
+        "password": "admin"
     }
 scripts:
   - type: afterResponse
