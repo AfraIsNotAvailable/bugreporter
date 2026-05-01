@@ -14,6 +14,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.web.client.RestTemplate;
+import java.util.Map;
+import java.util.HashMap;
+
 //bean Spring de tip service
 //o detecteaza la pornirea aplicatiei
 @Service
@@ -40,6 +44,7 @@ public class UserServiceImpl implements UserService {
         response.setRole(user.getRole());
         response.setBanned(user.isBanned());
         response.setCreatedAt(user.getCreatedAt());
+        response.setPhoneNumber(user.getPhoneNumber());
         return response;
     }
 
@@ -63,6 +68,10 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(Role.USER);
         user.setBanned(false);
+        if (dto.getPhoneNumber() != null && userRepository.existsByPhoneNumber(dto.getPhoneNumber())) {
+            throw new IllegalArgumentException("Phone number already in use");
+        }
+        user.setPhoneNumber(dto.getPhoneNumber());
 
         return mapToResponse(userRepository.save(user));
     }
@@ -108,6 +117,13 @@ public class UserServiceImpl implements UserService {
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
 
+        if (dto.getPhoneNumber() != null && !dto.getPhoneNumber().equals(user.getPhoneNumber())) {
+            if (userRepository.existsByPhoneNumber(dto.getPhoneNumber())) {
+                throw new IllegalArgumentException("Phone number already in use");
+            }
+            user.setPhoneNumber(dto.getPhoneNumber());
+        }
+
         return mapToResponse(userRepository.save(user));
     }
 
@@ -123,8 +139,39 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponse banUser(Long id) {
         User user = getUserEntityById(id);
+
+        if (user.getRole() == Role.ADMIN) {
+            throw new RuntimeException("Admin users cannot be banned.");
+        }
+
+        if (user.getRole() == Role.MODERATOR) {
+            throw new RuntimeException("Moderator users cannot be banned.");
+        }
+
         user.setBanned(true);
-        return mapToResponse(userRepository.save(user));
+
+
+        userRepository.save(user);
+
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        Map<String, String> body = new HashMap<>();
+        body.put("username", user.getUsername());
+        body.put("email", user.getEmail());
+        body.put("phoneNumber", user.getPhoneNumber());
+
+        try {
+            restTemplate.postForObject(
+                    "http://localhost:8082/api/notifications/ban",
+                    body,
+                    Void.class
+            );
+        } catch (Exception e) {
+            System.out.println("Notification service failed: " + e.getMessage());
+        }
+
+        return mapToResponse(user);
     }
 
 

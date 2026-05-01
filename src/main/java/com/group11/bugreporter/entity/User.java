@@ -41,6 +41,12 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+
+    //asta l-am pus nullable pentru ca e optional si as anu striuc nici userii pe care ii am deja in baza de date
+    @Column(nullable = true, unique = true)
+    private String phoneNumber;
+
+
     //metoda ca sa pun timpu la createdAt
     @PrePersist
     public void prePersist(){

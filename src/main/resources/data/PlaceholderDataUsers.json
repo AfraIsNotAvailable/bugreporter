@@ -3,7 +3,7 @@
     "id": 1,
     "username": "ana",
     "email": "ana@example.com",
-    "password": "ana-demo-pass",
+    "password": "NOT_A_REAL_PASSWORD",
     "role": "ADMIN",
     "banned": false,
     "createdAt": "2026-03-01T09:00:00"
@@ -12,7 +12,7 @@
     "id": 2,
     "username": "mihai",
     "email": "mihai@example.com",
-    "password": "mihai-demo-pass",
+    "password": "NOT_A_REAL_PASSWORD",
     "role": "MODERATOR",
     "banned": false,
     "createdAt": "2026-03-02T10:30:00"
@@ -21,7 +21,7 @@
     "id": 3,
     "username": "elena",
     "email": "elena@example.com",
-    "password": "elena-demo-pass",
+    "password": "NOT_A_REAL_PASSWORD",
     "role": "USER",
     "banned": false,
     "createdAt": "2026-03-03T11:15:00"
@@ -30,7 +30,7 @@
     "id": 4,
     "username": "rares",
     "email": "rares@example.com",
-    "password": "rares-demo-pass",
+    "password": "NOT_A_REAL_PASSWORD",
     "role": "USER",
     "banned": false,
     "createdAt": "2026-03-04T08:45:00"
@@ -39,7 +39,7 @@
     "id": 5,
     "username": "ioana",
     "email": "ioana@example.com",
-    "password": "ioana-demo-pass",
+    "password": "NOT_A_REAL_PASSWORD",
     "role": "USER",
     "banned": false,
     "createdAt": "2026-03-05T14:20:00"
