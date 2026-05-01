@@ -1,9 +1,9 @@
 $kind: http-request
 name: Update Bug Status
-url: "{{bugs}}/1/status?status=IN_PROGRESS"
+url: "{{bugs}}/1/status?status=OPEN"
 method: PATCH
 queryParams:
-  status: IN_PROGRESS
+  status: OPEN
 auth:
   type: bearer
   credentials:

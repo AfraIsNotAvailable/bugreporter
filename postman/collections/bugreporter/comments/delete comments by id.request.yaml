@@ -1,6 +1,6 @@
 $kind: http-request
 name: Delete Comment
-url: "{{comments}}/21"
+url: "{{comments}}/7"
 method: DELETE
 auth:
   type: bearer

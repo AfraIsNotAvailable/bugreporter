@@ -1,9 +1,12 @@
 $kind: http-request
 name: Add Tags to Bug
-url: "{{bugs}}/1/tags"
+url: "{{bugs}}/8/tags"
 method: POST
 body:
   type: json
-  content: |-
-    ["frontend", "mobile", "critical"]
+  content: '["frontend", "mobile", "critical"]'
+auth:
+  type: bearer
+  credentials:
+    token: "{{jwt_token}}"
 order: 1775141554884

@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,13 +31,11 @@ public class BugController {
      * Creeaza(raporteaza) un bug nou
      */
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<BugResponse> reportBug(
             @Valid @RequestBody BugRequest request,
             Authentication authentication
     ) {
-
-        System.out.println("AUTH: " + authentication); // ← AICI
-
         User user = resolveAuthenticatedUser(authentication);
         Bug bug = bugService.createBug(request, user.getId());
         return new ResponseEntity<>(BugResponse.fromEntity(bug), HttpStatus.CREATED);
@@ -66,6 +65,7 @@ public class BugController {
      * actualizeaza titlul sau textul unui bug
      */
     @PutMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<BugResponse> updateBug(
             @PathVariable Long id,
             @Valid @RequestBody BugRequest request,
@@ -94,6 +94,7 @@ public class BugController {
      * sterge un bug
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteBug(
             @PathVariable Long id,
             Authentication authentication
@@ -111,7 +112,15 @@ public class BugController {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new ForbiddenException("Authentication is required");
         }
-        String username = authentication.getName();
+        Object principal = authentication.getPrincipal();
+        String username;
+        if (principal instanceof User userPrincipal) {
+            username = userPrincipal.getUsername();
+        } else if (principal instanceof UserDetails userDetails) {
+            username = userDetails.getUsername();
+        } else {
+            username = authentication.getName();
+        }
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new ForbiddenException("Authenticated user not found: " + username));
     }
@@ -119,6 +128,7 @@ public class BugController {
 
 
     @PostMapping("/{id}/tags")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<BugResponse> addTags(
             @PathVariable Long id,
             @RequestBody List<String> tags
@@ -154,6 +164,7 @@ public class BugController {
     }
 
     @PatchMapping("/{id}/resolve")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<BugResponse> resolveBug(
             @PathVariable Long id,
             Authentication authentication

@@ -1,5 +1,7 @@
 $kind: http-request
 name: Filter Bugs
-url: "{{bugs}}/filter?search=login"
+url: "{{bugs}}/filter?search=button%20token"
 method: GET
+queryParams:
+  search: button%20token
 order: 1775141554885

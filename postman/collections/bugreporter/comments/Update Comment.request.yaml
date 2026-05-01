@@ -1,6 +1,6 @@
 $kind: http-request
 name: Update Comment
-url: "{{comments}}/22"
+url: "{{comments}}/8"
 method: PUT
 body:
   type: json
