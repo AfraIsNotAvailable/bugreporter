@@ -41,12 +41,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             User user = userRepository.findByUsername(username).orElse(null);
 
-            if (user != null && !user.isBanned() && jwtService.isTokenValid(jwt, user.getUsername())) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        user.getUsername(),
-                        null,
-                        List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
-                );
+            if (user == null) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            if (user.isBanned()) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().write("{\"message\": \"Your account is banned.\"}");
+                return;
+            }
+
+            if (jwtService.isTokenValid(jwt, user.getUsername())) {
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(
+                                user.getUsername(),
+                                null,
+                                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+                        );
+
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }

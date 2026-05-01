@@ -15,5 +15,7 @@ public class UserResponse{
     private Role role;
     private boolean banned;
     private LocalDateTime createdAt;
+    //am adaugat asta aici pentru ca imi trebuie la banning (trmit mesaj pe sms dupa ce un user e banned)
+    private String phoneNumber;
 
 }

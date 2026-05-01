@@ -33,11 +33,11 @@
 ### Membru Echipă 1 (Sisteme de Bază, Gestionare Utilizatori & Moderare)
 
 - [X] Implementează arhitectura pe straturi și maparea entităților în PostgreSQL.
-- [ ] Implementează CRUD pentru Utilizatori și rutele protejate (Routing guards).
-- [ ] Configurează autentificarea și stocarea parolelor în formă criptată.
-- [ ] Implementează privilegiile de Moderator: ștergerea sau editarea oricărui bug sau comentariu de pe site.
-- [ ] Implementează blocarea (ban) utilizatorilor pe perioadă nedeterminată și deblocarea acestora.
-- [ ] Restricționează accesul utilizatorilor blocați (mesaj la login, blocare acces prin URL).
+- [X] Implementează CRUD pentru Utilizatori și rutele protejate (Routing guards).
+- [X] Configurează autentificarea și stocarea parolelor în formă criptată.
+- [X] Implementează privilegiile de Moderator: ștergerea sau editarea oricărui bug sau comentariu de pe site.
+- [X] Implementează blocarea (ban) utilizatorilor pe perioadă nedeterminată și deblocarea acestora.
+- [X] Restricționează accesul utilizatorilor blocați (mesaj la login, blocare acces prin URL).
 - [ ] **Microserviciu:** Dezvoltă un serviciu independent care trimite e-mail și SMS la momentul blocării unui
   utilizator.
 

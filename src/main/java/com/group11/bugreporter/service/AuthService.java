@@ -42,12 +42,18 @@ public class AuthService {
             throw new RuntimeException("Email is already in use");
         }
 
+        if (request.getPhoneNumber() != null &&
+                userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
+            throw new RuntimeException("Phone number is already in use");
+        }
+
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
                 .banned(false)
+                .phoneNumber(request.getPhoneNumber())
                 .build();
         userRepository.save(user);
         return jwtService.generateToken(user.getUsername());

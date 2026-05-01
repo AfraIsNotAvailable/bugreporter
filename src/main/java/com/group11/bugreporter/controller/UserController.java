@@ -1,6 +1,7 @@
 package com.group11.bugreporter.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,11 +51,13 @@ public class UserController{
         userService.deleteUser(id);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     @PutMapping("/{id}/ban")
     public UserResponse banUser(@PathVariable Long id) {
         return userService.banUser(id);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     @PutMapping("/{id}/unban")
     public UserResponse unbanUser(@PathVariable Long id) {
         return userService.unbanUser(id);
