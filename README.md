@@ -38,7 +38,7 @@
 - [X] Implementează privilegiile de Moderator: ștergerea sau editarea oricărui bug sau comentariu de pe site.
 - [X] Implementează blocarea (ban) utilizatorilor pe perioadă nedeterminată și deblocarea acestora.
 - [X] Restricționează accesul utilizatorilor blocați (mesaj la login, blocare acces prin URL).
-- [ ] **Microserviciu:** Dezvoltă un serviciu independent care trimite e-mail și SMS la momentul blocării unui
+- [X] **Microserviciu:** Dezvoltă un serviciu independent care trimite e-mail și SMS la momentul blocării unui
   utilizator.
 
 ### Membru Echipă 2 (Motorul de Raportare Bug-uri & Fluxul de Lucru)
