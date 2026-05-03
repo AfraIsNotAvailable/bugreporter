@@ -1,69 +1,107 @@
-import { createContext, useState } from "react";
+import { createContext, useContext, useState } from "react";
 
-
-//aici frontend-ul tine info despre user-ul logat 
-
-//context global -> orice componenta poate accesa datele direct
 export const AuthContext = createContext(null);
 
+function normalizeRole(role) {
+  if (typeof role !== "string" || role.trim() === "") {
+    return null;
+  }
 
-//provider-ul               // toate componentele din interior 
+  return role.toUpperCase().replace(/^ROLE_/, "");
+}
+
+function parseUserFromToken(token) {
+  if (!token) {
+    return null;
+  }
+
+  try {
+    const [, payload] = token.split(".");
+
+    if (!payload) {
+      return null;
+    }
+
+    const normalizedPayload = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const paddedPayload = normalizedPayload.padEnd(
+      normalizedPayload.length + ((4 - (normalizedPayload.length % 4)) % 4),
+      "="
+    );
+    const decodedPayload = atob(paddedPayload);
+    const decoded = JSON.parse(decodedPayload);
+    const role = normalizeRole(decoded.role);
+
+    if (!role) {
+      return null;
+    }
+
+    return {
+      username: decoded.sub || null,
+      role,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function AuthProvider({ children }) {
-
-                            //memoriee interna in React pentru token si user
   const [token, setToken] = useState(() => localStorage.getItem("token"));
-
-  // iau userul din browser si il fac string daca nu ii returnez null
   const [user, setUser] = useState(() => {
     try {
       const savedUser = localStorage.getItem("user");
-      return savedUser ? JSON.parse(savedUser) : null;
+
+      if (savedUser) {
+        return JSON.parse(savedUser);
+      }
+
+      return parseUserFromToken(localStorage.getItem("token"));
     } catch {
       localStorage.removeItem("user");
-      return null;
+      return parseUserFromToken(localStorage.getItem("token"));
     }
   });
 
+  const login = (newToken) => {
+    const decodedUser = parseUserFromToken(newToken);
 
-  //asta se apeleaza cand userul se logheaza 
-  const login = (token, user) => {
+    localStorage.setItem("token", newToken);
 
-    //salvez token in browser 
-    localStorage.setItem("token", token);
-    //salvez user                 //localStorage accepta doar string-uri 
-    localStorage.setItem("user", JSON.stringify(user));
+    if (decodedUser) {
+      localStorage.setItem("user", JSON.stringify(decodedUser));
+    } else {
+      localStorage.removeItem("user");
+    }
 
+    setToken(newToken);
+    setUser(decodedUser);
 
-    //acctualizez state-ul React 
-    setToken(token);
-    setUser(user);
+    return decodedUser;
   };
 
-
-  //asta se face cand userul face logout 
   const logout = () => {
-    //sterg datele din browser 
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-
-    //resetez state-ul React
     setToken(null);
     setUser(null);
   };
 
+  const value = {
+    token,
+    user,
+    login,
+    logout,
+    isAuthenticated: Boolean(token),
+  };
 
-  //verific daca userul e logat 
-                          //conversie la boolean 
-  const isAuthenticated = !!token;
-
-  //cu asta dau acces gobal la date -> orice componenta poate folosi valorile 
-  return (
-    <AuthContext.Provider
-      value={{ user, token, login, logout, isAuthenticated }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+export function useAuth() {
+  const context = useContext(AuthContext);
 
+  if (!context) {
+    throw new Error("useAuth must be used inside an AuthProvider");
+  }
+
+  return context;
+}

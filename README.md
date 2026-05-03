@@ -39,7 +39,7 @@
 - [X] Implementează blocarea (ban) utilizatorilor pe perioadă nedeterminată și deblocarea acestora.
 - [X] Restricționează accesul utilizatorilor blocați (mesaj la login, blocare acces prin URL).
 - [X] **Microserviciu:** Dezvoltă un serviciu independent care trimite e-mail și SMS la momentul blocării unui
-  utilizator.
+  utilizator.   -> mailpit pe http://localhost:8025
 
 ### Membru Echipă 2 (Motorul de Raportare Bug-uri & Fluxul de Lucru)
 
