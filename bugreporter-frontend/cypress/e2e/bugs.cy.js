@@ -1,5 +1,3 @@
-/* global cy, describe, beforeEach, it */
-
 const bugOne = {
   id: 1,
   title: "Login button broken",
