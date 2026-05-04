@@ -1,5 +1,6 @@
 package com.group11.bugreporter.service;
 
+import com.group11.bugreporter.dto.response.CommentResponse;
 import com.group11.bugreporter.entity.Bug;
 import com.group11.bugreporter.entity.Comment;
 import com.group11.bugreporter.entity.CommentVote;
@@ -26,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -150,10 +152,12 @@ class CommentServiceTest {
     @Test
     void getCommentsByBugId_returnsScoreOrderedCommentsFromRepository() {
         Long bugId = 55L;
+        Long userId = 1L;
         when(bugRepository.existsById(bugId)).thenReturn(true);
         when(commentRepository.findByBugIdOrderByScoreDescCreatedAtDesc(bugId)).thenReturn(List.of(comment));
+        when(commentVoteRepository.findByUserIdAndCommentIdIn(eq(userId), any())).thenReturn(List.of());
 
-        List<Comment> result = commentService.getCommentsByBugId(bugId);
+        List<CommentResponse> result = commentService.getCommentsByBugId(bugId, userId);
 
         assertEquals(1, result.size());
         verify(commentRepository).findByBugIdOrderByScoreDescCreatedAtDesc(bugId);
@@ -166,7 +170,7 @@ class CommentServiceTest {
 
         ResourceNotFoundException ex = assertThrows(
                 ResourceNotFoundException.class,
-                () -> commentService.getCommentsByBugId(missingBugId)
+                () -> commentService.getCommentsByBugId(missingBugId, null)
         );
 
         assertEquals("Bug not found with id: 404", ex.getMessage());

@@ -13,9 +13,10 @@ public class JwtService {
     private static final String SECRET_KEY = "MyVerySuperSecretLongAndComplexKeyForJWTSigning1234567890";
     private final SecretKey secretKey = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
-    public String generateToken(String username) {
+    public String generateToken(String username, String role) {
         return Jwts.builder()
                 .subject(username)
+                .claim("role", role)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
                 .signWith(secretKey)
