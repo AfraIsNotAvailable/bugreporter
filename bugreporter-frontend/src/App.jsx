@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import Navbar from "./components/Navbar"; // ← asta lipsea
+import Navbar from "./components/Navbar";
 
 import BugList from "./pages/BugList";
 import BugDetail from "./pages/BugDetail";
