@@ -62,11 +62,18 @@ public class CommentController {
      * @return a {@link ResponseEntity} containing the list of comments and HTTP 200 status
      */
     @GetMapping("/bug/{bugId}")
-    public ResponseEntity<List<CommentResponse>> getCommentsByBugId(@PathVariable Long bugId) {
-        List<Comment> comments = commentService.getCommentsByBugId(bugId);
-        List<CommentResponse> response = comments.stream()
-                .map(CommentResponse::fromEntity)
-                .toList();
+    public ResponseEntity<List<CommentResponse>> getCommentsByBugId(
+            @PathVariable Long bugId,
+            Authentication authentication
+    ) {
+        Long userId = null;
+        if (authentication != null && authentication.isAuthenticated()) {
+            userId = userRepository.findByUsername(authentication.getName())
+                    .map(User::getId)
+                    .orElse(null);
+        }
+
+        List<CommentResponse> response = commentService.getCommentsByBugId(bugId, userId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

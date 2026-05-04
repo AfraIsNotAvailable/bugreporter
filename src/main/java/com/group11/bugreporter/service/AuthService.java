@@ -29,8 +29,9 @@ public class AuthService {
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid password");
         }
-
+        
         return jwtService.generateToken(user.getUsername(), user.getRole());
+
     }
 
     public String register(RegisterRequest request) {
@@ -56,6 +57,10 @@ public class AuthService {
                 .phoneNumber(request.getPhoneNumber())
                 .build();
         userRepository.save(user);
+<<<<<<< HEAD
         return jwtService.generateToken(user.getUsername(), user.getRole());
+=======
+        return jwtService.generateToken(user.getUsername(), user.getRole().name());
+>>>>>>> main
     }
 }
