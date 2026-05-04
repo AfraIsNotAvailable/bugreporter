@@ -13,6 +13,7 @@ public class CommentResponse {
     private Long id;
     private String text;
     private String imageUrl;
+    private Long bugId;
     private Long authorId;
     private String authorUsername; // optional, for display purposes
     private LocalDateTime createdAt;
@@ -28,6 +29,7 @@ public class CommentResponse {
                 .id(comment.getId())
                 .text(comment.getText())
                 .imageUrl(comment.getImageUrl())
+                .bugId(comment.getBug() != null ? comment.getBug().getId() : null)
                 .authorId(comment.getAuthor().getId())
                 .authorUsername(comment.getAuthor().getUsername())
                 .createdAt(comment.getCreatedAt())

@@ -1,12 +1,14 @@
 package com.group11.bugreporter.controller;
 
-import com.group11.bugreporter.entity.Bug;
-import com.group11.bugreporter.entity.Comment;
+import com.group11.bugreporter.dto.response.BugResponse;
+import com.group11.bugreporter.dto.response.CommentResponse;
+import com.group11.bugreporter.dto.response.UserResponse;
 import com.group11.bugreporter.entity.User;
 import com.group11.bugreporter.entity.enums.Role;
 import com.group11.bugreporter.repository.BugRepository;
 import com.group11.bugreporter.repository.CommentRepository;
 import com.group11.bugreporter.repository.UserRepository;
+import com.group11.bugreporter.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,12 +18,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
-@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class AdminController {
     private final UserRepository userRepository;
     private final BugRepository bugRepository;
     private final CommentRepository commentRepository;
+    private final UserService userService;
 
     /**
      * Returneaza lista completa de utilizatori.
@@ -29,8 +31,9 @@ public class AdminController {
      * @return raspuns HTTP 200 cu toti utilizatorii din baza de date
      */
     @GetMapping("/users")
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userRepository.findAll());
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
     /**
@@ -39,8 +42,11 @@ public class AdminController {
      * @return raspuns HTTP 200 cu toate comentariile din baza de date
      */
     @GetMapping("/comments")
-    public ResponseEntity<List<Comment>> getAllComments() {
-        return ResponseEntity.ok(commentRepository.findAll());
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<CommentResponse>> getAllComments() {
+        return ResponseEntity.ok(commentRepository.findAll().stream()
+                .map(CommentResponse::fromEntity)
+                .toList());
     }
 
     /**
@@ -49,8 +55,11 @@ public class AdminController {
      * @return raspuns HTTP 200 cu toate bug-urile din baza de date
      */
     @GetMapping("/bugs")
-    public ResponseEntity<List<Bug>> getAllBugs() {
-        return ResponseEntity.ok(bugRepository.findAll());
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<BugResponse>> getAllBugs() {
+        return ResponseEntity.ok(bugRepository.findAll().stream()
+                .map(BugResponse::fromEntity)
+                .toList());
     }
 
     /**
@@ -62,13 +71,10 @@ public class AdminController {
      * @throws RuntimeException daca utilizatorul nu este gasit
      */
     @PutMapping("/users/{userId}/ban")
-    public ResponseEntity<String> setUserBanStatus(@PathVariable Long userId, @RequestParam boolean banned) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        user.setBanned(banned);
-        userRepository.save(user);
-        return ResponseEntity.ok("User ban status updated to " + banned);
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
+    public ResponseEntity<UserResponse> setUserBanStatus(@PathVariable Long userId, @RequestParam boolean banned) {
+        UserResponse response = banned ? userService.banUser(userId) : userService.unbanUser(userId);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -80,13 +86,24 @@ public class AdminController {
      * @throws RuntimeException daca utilizatorul nu este gasit
      */
     @PutMapping("/users/{userId}/role")
-    public ResponseEntity<String> updateUserRole(@PathVariable Long userId, @RequestParam Role role) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserResponse> updateUserRole(@PathVariable Long userId, @RequestParam Role role) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         user.setRole(role);
-        userRepository.save(user);
-        return ResponseEntity.ok("User role updated to " + role.name());
+        return ResponseEntity.ok(mapToResponse(userRepository.save(user)));
     }
 
+    private UserResponse mapToResponse(User user) {
+        UserResponse response = new UserResponse();
+        response.setId(user.getId());
+        response.setUsername(user.getUsername());
+        response.setEmail(user.getEmail());
+        response.setRole(user.getRole());
+        response.setBanned(user.isBanned());
+        response.setCreatedAt(user.getCreatedAt());
+        response.setPhoneNumber(user.getPhoneNumber());
+        return response;
+    }
 }

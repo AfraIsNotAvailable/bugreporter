@@ -3,6 +3,7 @@ package com.group11.bugreporter.config;
 import com.group11.bugreporter.security.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -32,6 +33,7 @@ import java.util.List;
 @Configuration
 @EnableMethodSecurity
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityConfig {
 
     /**
@@ -57,6 +59,8 @@ public class SecurityConfig {
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        log.info("Configuring security: /api/auth/** is public; other protected endpoints use stateless JWT.");
+
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 //                .csrf(AbstractHttpConfigurer::disable)

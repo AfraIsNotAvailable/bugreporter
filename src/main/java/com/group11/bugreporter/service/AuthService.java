@@ -1,14 +1,16 @@
 package com.group11.bugreporter.service;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.group11.bugreporter.dto.request.LoginRequest;
 import com.group11.bugreporter.dto.request.RegisterRequest;
 import com.group11.bugreporter.entity.User;
 import com.group11.bugreporter.entity.enums.Role;
 import com.group11.bugreporter.repository.UserRepository;
 import com.group11.bugreporter.security.JwtService;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -30,21 +32,22 @@ public class AuthService {
             throw new RuntimeException("Invalid password");
         }
 
-        return jwtService.generateToken(user.getUsername(), user.getRole().name());
+        return jwtService.generateToken(user.getUsername(), user.getRole());
+
     }
 
     public String register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username is already taken");
+            throw new IllegalArgumentException("Username is already taken");
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email is already in use");
+            throw new IllegalArgumentException("Email is already in use");
         }
 
         if (request.getPhoneNumber() != null &&
                 userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
-            throw new RuntimeException("Phone number is already in use");
+            throw new IllegalArgumentException("Phone number is already in use");
         }
 
         User user = User.builder()
@@ -56,6 +59,8 @@ public class AuthService {
                 .phoneNumber(request.getPhoneNumber())
                 .build();
         userRepository.save(user);
-        return jwtService.generateToken(user.getUsername(), user.getRole().name());
+
+        return jwtService.generateToken(user.getUsername(), user.getRole());
+
     }
 }

@@ -32,7 +32,7 @@ function App() {
         <Route
           path="/moderator"
           element={
-            <PrivateRoute roles={["ADMIN", "MODERATOR"]}>
+            <PrivateRoute role="MODERATOR">
               <Moderator />
             </PrivateRoute>
           }

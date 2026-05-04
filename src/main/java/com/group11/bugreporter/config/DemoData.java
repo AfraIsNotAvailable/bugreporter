@@ -14,6 +14,7 @@ import com.group11.bugreporter.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
  * din fisierele JSON si ID-urile reale din baza de date.
  */
 @Component
+@Profile("dev")
 @RequiredArgsConstructor
 @Slf4j
 public class DemoData {
