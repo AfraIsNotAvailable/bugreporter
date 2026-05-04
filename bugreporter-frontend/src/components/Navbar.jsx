@@ -34,6 +34,10 @@ function Navbar() {
 
   return (
     <nav style={navStyle}>
+      <Link to="/bugs" style={linkStyle}>
+        Bugs
+      </Link>
+      
       <Link to="/" style={linkStyle}>
         Home
       </Link>

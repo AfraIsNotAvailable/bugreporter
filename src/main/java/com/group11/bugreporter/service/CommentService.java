@@ -1,5 +1,6 @@
 package com.group11.bugreporter.service;
 
+import com.group11.bugreporter.dto.response.CommentResponse;
 import com.group11.bugreporter.entity.*;
 import com.group11.bugreporter.entity.enums.BugStatus;
 import com.group11.bugreporter.entity.enums.Role;
@@ -15,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -128,12 +131,28 @@ public class CommentService {
      * @throws ResourceNotFoundException if the bug does not exist
      */
     @Transactional(readOnly = true)
-    public List<Comment> getCommentsByBugId(Long bugId) {
+    public List<CommentResponse> getCommentsByBugId(Long bugId, Long userId) {
         if (!bugRepository.existsById(bugId)) {
             throw new ResourceNotFoundException("Bug not found with id: " + bugId);
         }
 
-        return commentRepository.findByBugIdOrderByScoreDescCreatedAtDesc(bugId);
+        List<Comment> comments = commentRepository.findByBugIdOrderByScoreDescCreatedAtDesc(bugId);
+
+        if (userId == null || comments.isEmpty()) {
+            return comments.stream().map(CommentResponse::fromEntity).toList();
+        }
+
+        List<Long> commentIds = comments.stream().map(Comment::getId).toList();
+        Map<Long, VoteType> voteMap = commentVoteRepository
+                .findByUserIdAndCommentIdIn(userId, commentIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        v -> v.getComment().getId(),
+                        CommentVote::getVoteType
+                ));
+        return comments.stream()
+                .map(c -> CommentResponse.fromEntity(c, voteMap.get(c.getId())))
+                .toList();
     }
 
     /**
