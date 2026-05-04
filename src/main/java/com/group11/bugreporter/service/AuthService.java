@@ -30,7 +30,7 @@ public class AuthService {
             throw new RuntimeException("Invalid password");
         }
 
-        return jwtService.generateToken(user.getUsername());
+        return jwtService.generateToken(user.getUsername(), user.getRole());
     }
 
     public String register(RegisterRequest request) {
@@ -56,6 +56,6 @@ public class AuthService {
                 .phoneNumber(request.getPhoneNumber())
                 .build();
         userRepository.save(user);
-        return jwtService.generateToken(user.getUsername());
+        return jwtService.generateToken(user.getUsername(), user.getRole());
     }
 }

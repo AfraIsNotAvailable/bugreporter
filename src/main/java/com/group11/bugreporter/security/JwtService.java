@@ -1,5 +1,6 @@
 package com.group11.bugreporter.security;
 
+import com.group11.bugreporter.entity.enums.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -14,10 +15,20 @@ public class JwtService {
     private final SecretKey secretKey = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
     public String generateToken(String username) {
-        return Jwts.builder()
+        return generateToken(username, null);
+    }
+
+    public String generateToken(String username, Role role) {
+        var builder = Jwts.builder()
                 .subject(username)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)); // 10 hours
+
+        if (role != null) {
+            builder.claim("role", role.name());
+        }
+
+        return builder
                 .signWith(secretKey)
                 .compact();
     }

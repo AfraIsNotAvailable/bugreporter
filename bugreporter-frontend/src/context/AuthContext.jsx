@@ -31,10 +31,6 @@ function parseUserFromToken(token) {
     const decoded = JSON.parse(decodedPayload);
     const role = normalizeRole(decoded.role);
 
-    if (!role) {
-      return null;
-    }
-
     return {
       username: decoded.sub || null,
       role,

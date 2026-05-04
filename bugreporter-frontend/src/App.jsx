@@ -1,7 +1,8 @@
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar"; // ← asta lipsea
 
-import Home from "./pages/Home";
+import BugList from "./pages/BugList";
+import BugDetail from "./pages/BugDetail";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Admin from "./pages/Admin";
@@ -14,7 +15,9 @@ function App() {
       <Navbar />
 
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<BugList />} />
+        <Route path="/bugs" element={<BugList />} />
+        <Route path="/bugs/:id" element={<BugDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 

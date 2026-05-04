@@ -35,7 +35,7 @@ function Navbar() {
   return (
     <nav style={navStyle}>
       <Link to="/" style={linkStyle}>
-        Home
+        Bugs
       </Link>
 
       {!isAuthenticated && (
