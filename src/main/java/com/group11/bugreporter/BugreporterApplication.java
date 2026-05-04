@@ -12,7 +12,9 @@ public class BugreporterApplication {
 	public static void main(String[] args) {
 		DockerComposeBootstrap.bootstrapIfNecessary();
 		ConfigurableApplicationContext context = SpringApplication.run(BugreporterApplication.class, args);
-		context.getBean(DemoData.class).loadDemoData();
+		context.getBeansOfType(DemoData.class)
+				.values()
+				.forEach(DemoData::loadDemoData);
 	}
 
 }

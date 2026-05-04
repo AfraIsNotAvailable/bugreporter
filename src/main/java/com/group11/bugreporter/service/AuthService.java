@@ -38,16 +38,16 @@ public class AuthService {
 
     public String register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username is already taken");
+            throw new IllegalArgumentException("Username is already taken");
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email is already in use");
+            throw new IllegalArgumentException("Email is already in use");
         }
 
         if (request.getPhoneNumber() != null &&
                 userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
-            throw new RuntimeException("Phone number is already in use");
+            throw new IllegalArgumentException("Phone number is already in use");
         }
 
         User user = User.builder()

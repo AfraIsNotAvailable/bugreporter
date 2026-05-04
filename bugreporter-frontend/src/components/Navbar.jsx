@@ -30,7 +30,7 @@ function Navbar() {
   };
 
   const isAdmin = user?.role === "ADMIN";
-  const isModerator = user?.role === "MODERATOR" || user?.role === "ADMIN";
+  const isModerator = user?.role === "MODERATOR";
 
   return (
     <nav style={navStyle}>

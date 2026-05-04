@@ -27,12 +27,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserRepository userRepository;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        boolean publicAuthEndpoint = path != null && path.startsWith("/api/auth/");
+
+        if (publicAuthEndpoint) {
+            log.debug("Skipping JWT filter for public auth endpoint {} {}", request.getMethod(), path);
+        }
+
+        return publicAuthEndpoint;
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String username;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.debug("No Bearer token found for {} {}; continuing without authentication",
+                    request.getMethod(), request.getServletPath());
             filterChain.doFilter(request, response);
             return;
         }
@@ -44,11 +58,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             User user = userRepository.findByUsername(username).orElse(null);
 
             if (user == null) {
+                log.debug("JWT username '{}' was not found; continuing without authentication", username);
                 filterChain.doFilter(request, response);
                 return;
             }
 
             if (user.isBanned()) {
+                log.warn("Blocked banned user '{}' from {} {}", user.getUsername(),
+                        request.getMethod(), request.getServletPath());
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
