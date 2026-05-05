@@ -76,7 +76,7 @@ function Admin() {
       </section>
 
       <section style={sectionStyle}>
-        <h2>Bugs</h2>
+        <h2>Bugs / Posts</h2>
         {loading && <p>Loading bugs...</p>}
         {error && <p style={{ color: "red" }}>{error}</p>}
         {!loading && !error && (
@@ -86,8 +86,9 @@ function Admin() {
                 <tr>
                   <th style={thStyle}>ID</th>
                   <th style={thStyle}>Title</th>
-                  <th style={thStyle}>Author</th>
+                  <th style={thStyle}>Description</th>
                   <th style={thStyle}>Status</th>
+                  <th style={thStyle}>Author</th>
                   <th style={thStyle}>Created</th>
                 </tr>
               </thead>
@@ -103,8 +104,9 @@ function Admin() {
                   <tr key={bug.id}>
                     <td style={tdStyle}>{bug.id}</td>
                     <td style={tdStyle}>{bug.title}</td>
-                    <td style={tdStyle}>{bug.authorUsername}</td>
+                    <td style={tdStyle}>{bug.text}</td>
                     <td style={tdStyle}>{bug.status}</td>
+                    <td style={tdStyle}>{bug.authorUsername || "-"}</td>
                     <td style={tdStyle}>{formatDate(bug.createdAt)}</td>
                   </tr>
                 ))}
@@ -124,17 +126,16 @@ function Admin() {
               <thead>
                 <tr>
                   <th style={thStyle}>ID</th>
-                  <th style={thStyle}>Bug</th>
-                  <th style={thStyle}>Author</th>
                   <th style={thStyle}>Text</th>
-                  <th style={thStyle}>Score</th>
+                  <th style={thStyle}>Author</th>
+                  <th style={thStyle}>Bug / Post ID</th>
                   <th style={thStyle}>Created</th>
                 </tr>
               </thead>
               <tbody>
                 {comments.length === 0 && (
                   <tr>
-                    <td style={tdStyle} colSpan="6">
+                    <td style={tdStyle} colSpan="5">
                       No comments found.
                     </td>
                   </tr>
@@ -142,10 +143,9 @@ function Admin() {
                 {comments.map((comment) => (
                   <tr key={comment.id}>
                     <td style={tdStyle}>{comment.id}</td>
-                    <td style={tdStyle}>{comment.bugId}</td>
-                    <td style={tdStyle}>{comment.authorUsername}</td>
                     <td style={tdStyle}>{comment.text}</td>
-                    <td style={tdStyle}>{comment.score}</td>
+                    <td style={tdStyle}>{comment.authorUsername || "-"}</td>
+                    <td style={tdStyle}>{comment.bugId}</td>
                     <td style={tdStyle}>{formatDate(comment.createdAt)}</td>
                   </tr>
                 ))}

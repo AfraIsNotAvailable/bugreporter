@@ -31,7 +31,7 @@ function Home() {
   };
 
   const isAdmin = user?.role === "ADMIN";
-  const isModerator = user?.role === "MODERATOR" || user?.role === "ADMIN";
+  const isModerator = user?.role === "MODERATOR";
 
   return (
     <div style={containerStyle}>
