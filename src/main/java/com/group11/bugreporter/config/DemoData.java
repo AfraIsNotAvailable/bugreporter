@@ -18,6 +18,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.annotation.PostConstruct;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -58,6 +60,11 @@ public class DemoData {
     private final BugRepository bugRepository;
     private final ObjectMapper objectMapper;
     private final AuthService authService;
+
+    @PostConstruct
+    public void init() {
+        loadDemoData();
+    }
 
     /**
      * Incarca datele demo intr-o tranzactie:
