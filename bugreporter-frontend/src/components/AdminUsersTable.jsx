@@ -44,6 +44,14 @@ function getErrorMessage(error, fallback) {
   return data?.message || fallback;
 }
 
+function formatDate(date) {
+  if (!date) {
+    return "-";
+  }
+
+  return new Date(date).toLocaleDateString();
+}
+
 function AdminUsersTable({ canChangeRoles = false }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -132,17 +140,19 @@ function AdminUsersTable({ canChangeRoles = false }) {
         <table style={tableStyle}>
           <thead>
             <tr>
+              <th style={thStyle}>ID</th>
               <th style={thStyle}>Username</th>
               <th style={thStyle}>Email</th>
               <th style={thStyle}>Role</th>
               <th style={thStyle}>Banned</th>
+              <th style={thStyle}>Created</th>
               <th style={thStyle}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {users.length === 0 && (
               <tr>
-                <td style={tdStyle} colSpan="5">
+                <td style={tdStyle} colSpan="7">
                   No users found.
                 </td>
               </tr>
@@ -150,6 +160,7 @@ function AdminUsersTable({ canChangeRoles = false }) {
 
             {users.map((user) => (
               <tr key={user.id}>
+                <td style={tdStyle}>{user.id}</td>
                 <td style={tdStyle}>{user.username}</td>
                 <td style={tdStyle}>{user.email}</td>
                 <td style={tdStyle}>
@@ -171,19 +182,16 @@ function AdminUsersTable({ canChangeRoles = false }) {
                   )}
                 </td>
                 <td style={tdStyle}>{user.banned ? "Yes" : "No"}</td>
+                <td style={tdStyle}>{formatDate(user.createdAt)}</td>
                 <td style={tdStyle}>
-                  {user.role === "USER" || user.banned ? (
-                    <button
-                      type="button"
-                      onClick={() => handleBanToggle(user)}
-                      disabled={updatingUserId === user.id}
-                      style={buttonStyle}
-                    >
-                      {user.banned ? "Unban" : "Ban"}
-                    </button>
-                  ) : (
-                    "Not available"
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleBanToggle(user)}
+                    disabled={updatingUserId === user.id}
+                    style={buttonStyle}
+                  >
+                    {user.banned ? "Unban" : "Ban"}
+                  </button>
                 </td>
               </tr>
             ))}

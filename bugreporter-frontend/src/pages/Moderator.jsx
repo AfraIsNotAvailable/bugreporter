@@ -92,14 +92,6 @@ function Moderator() {
     }
   };
 
-  if (loading) {
-    return <div style={{ padding: "24px" }}>Loading bugs...</div>;
-  }
-
-  if (error) {
-    return <div style={{ padding: "24px", color: "red" }}>{error}</div>;
-  }
-
   return (
     <div style={pageStyle}>
       <h1 style={{ marginTop: 0, marginBottom: "20px" }}>Moderator Panel</h1>
@@ -110,57 +102,61 @@ function Moderator() {
       </section>
 
       <section style={sectionStyle}>
-        <h2>Bug Status</h2>
+        <h2>Bugs / Posts</h2>
 
+        {loading && <p>Loading bugs...</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
         {actionError && <p style={{ color: "red" }}>{actionError}</p>}
 
-        <div style={{ overflowX: "auto" }}>
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                <th style={thStyle}>ID</th>
-                <th style={thStyle}>Title</th>
-                <th style={thStyle}>Description</th>
-                <th style={thStyle}>Author</th>
-                <th style={thStyle}>Created</th>
-                <th style={thStyle}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bugs.length === 0 && (
+        {!loading && !error && (
+          <div style={{ overflowX: "auto" }}>
+            <table style={tableStyle}>
+              <thead>
                 <tr>
-                  <td style={tdStyle} colSpan="6">
-                    No bugs found.
-                  </td>
+                  <th style={thStyle}>ID</th>
+                  <th style={thStyle}>Title</th>
+                  <th style={thStyle}>Description</th>
+                  <th style={thStyle}>Status</th>
+                  <th style={thStyle}>Author</th>
+                  <th style={thStyle}>Created</th>
                 </tr>
-              )}
+              </thead>
+              <tbody>
+                {bugs.length === 0 && (
+                  <tr>
+                    <td style={tdStyle} colSpan="6">
+                      No bugs found.
+                    </td>
+                  </tr>
+                )}
 
-              {bugs.map((bug) => (
-                <tr key={bug.id}>
-                  <td style={tdStyle}>{bug.id}</td>
-                  <td style={tdStyle}>{bug.title}</td>
-                  <td style={tdStyle}>{bug.text}</td>
-                  <td style={tdStyle}>{bug.authorUsername || "-"}</td>
-                  <td style={tdStyle}>{formatDate(bug.createdAt)}</td>
-                  <td style={tdStyle}>
-                    <select
-                      value={bug.status}
-                      onChange={(e) => updateBugStatus(bug, e.target.value)}
-                      disabled={updatingBugId === bug.id}
-                      style={selectStyle}
-                    >
-                      {statuses.map((status) => (
-                        <option key={status} value={status}>
-                          {status}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                {bugs.map((bug) => (
+                  <tr key={bug.id}>
+                    <td style={tdStyle}>{bug.id}</td>
+                    <td style={tdStyle}>{bug.title}</td>
+                    <td style={tdStyle}>{bug.text}</td>
+                    <td style={tdStyle}>
+                      <select
+                        value={bug.status}
+                        onChange={(e) => updateBugStatus(bug, e.target.value)}
+                        disabled={updatingBugId === bug.id}
+                        style={selectStyle}
+                      >
+                        {statuses.map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td style={tdStyle}>{bug.authorUsername || "-"}</td>
+                    <td style={tdStyle}>{formatDate(bug.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
     </div>
   );
