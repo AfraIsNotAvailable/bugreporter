@@ -63,9 +63,7 @@ public class BugService {
         Bug bug = getBugById(id);
 
         boolean isAuthor = bug.getAuthor().getId().equals(userId);
-        boolean isModerator = role == Role.MODERATOR;
-
-        if (!isAuthor && !isModerator) {
+        if (!isAuthor) {
             throw new ForbiddenException("You are not allowed to edit this bug");
         }
 
@@ -99,10 +97,10 @@ public class BugService {
         Bug bug = getBugById(id);
 
         boolean isAuthor = bug.getAuthor().getId().equals(requestingUserId);
-        boolean isModerator = requestingUserRole == Role.MODERATOR;
+        boolean canDeleteAnyBug = requestingUserRole == Role.MODERATOR || requestingUserRole == Role.ADMIN;
 
-        if (!isAuthor && !isModerator) {
-            throw new ForbiddenException("Only the author or a moderator can delete this bug report");
+        if (!isAuthor && !canDeleteAnyBug) {
+            throw new ForbiddenException("Only the author, a moderator or an administrator can delete this bug report");
         }
 
         bugRepository.delete(bug);
