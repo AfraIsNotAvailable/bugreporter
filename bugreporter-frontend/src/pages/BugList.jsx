@@ -103,16 +103,33 @@ function BugList() {
 
   return (
     <main style={pageStyle}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: "12px" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: "12px",
+        }}
+      >
         <h1 style={{ marginTop: 0 }}>Bugs</h1>
         {isAuthenticated && (
-          <button type="button" style={buttonStyle} onClick={() => setShowNewForm(!showNewForm)}>
+          <button
+            type="button"
+            style={buttonStyle}
+            onClick={() => setShowNewForm(!showNewForm)}
+          >
             Report Bug
           </button>
         )}
       </div>
 
-      <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "12px",
+          flexWrap: "wrap",
+          marginBottom: "16px",
+        }}
+      >
         <form onSubmit={handleSearch} style={{ display: "flex", gap: "8px" }}>
           <input
             aria-label="Search by title"
@@ -121,7 +138,9 @@ function BugList() {
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search title"
           />
-          <button type="submit" style={buttonStyle}>Search</button>
+          <button type="submit" style={buttonStyle}>
+            Search
+          </button>
         </form>
 
         <div style={{ display: "flex", gap: "8px" }}>
@@ -132,12 +151,19 @@ function BugList() {
             onChange={(event) => setTag(event.target.value)}
             placeholder="Filter tag"
           />
-          <button type="button" style={buttonStyle} onClick={() => handleTagFilter()}>
+          <button
+            type="button"
+            style={buttonStyle}
+            onClick={() => handleTagFilter()}
+          >
             Filter Tag
           </button>
         </div>
 
-        <form onSubmit={handleUserFilter} style={{ display: "flex", gap: "8px" }}>
+        <form
+          onSubmit={handleUserFilter}
+          style={{ display: "flex", gap: "8px" }}
+        >
           <input
             aria-label="Filter by user id"
             style={inputStyle}
@@ -145,7 +171,9 @@ function BugList() {
             onChange={(event) => setUserId(event.target.value)}
             placeholder="User id"
           />
-          <button type="submit" style={buttonStyle}>By User</button>
+          <button type="submit" style={buttonStyle}>
+            By User
+          </button>
         </form>
 
         {isAuthenticated && (
@@ -159,32 +187,57 @@ function BugList() {
       </div>
 
       {showNewForm && (
-        <form onSubmit={handleCreate} style={{ ...rowStyle, marginBottom: "16px" }}>
+        <form
+          onSubmit={handleCreate}
+          style={{ ...rowStyle, marginBottom: "16px" }}
+        >
           <h2 style={{ marginTop: 0 }}>Report Bug</h2>
           <input
             aria-label="Bug title"
             required
-            style={{ ...inputStyle, width: "100%", boxSizing: "border-box", marginBottom: "8px" }}
+            style={{
+              ...inputStyle,
+              width: "100%",
+              boxSizing: "border-box",
+              marginBottom: "8px",
+            }}
             value={form.title}
-            onChange={(event) => setForm({ ...form, title: event.target.value })}
+            onChange={(event) =>
+              setForm({ ...form, title: event.target.value })
+            }
             placeholder="Title"
           />
           <textarea
             aria-label="Bug description"
             required
-            style={{ ...inputStyle, width: "100%", minHeight: "100px", boxSizing: "border-box", marginBottom: "8px" }}
+            style={{
+              ...inputStyle,
+              width: "100%",
+              minHeight: "100px",
+              boxSizing: "border-box",
+              marginBottom: "8px",
+            }}
             value={form.text}
             onChange={(event) => setForm({ ...form, text: event.target.value })}
             placeholder="Description"
           />
           <input
             aria-label="Bug image url"
-            style={{ ...inputStyle, width: "100%", boxSizing: "border-box", marginBottom: "8px" }}
+            style={{
+              ...inputStyle,
+              width: "100%",
+              boxSizing: "border-box",
+              marginBottom: "8px",
+            }}
             value={form.imageUrl}
-            onChange={(event) => setForm({ ...form, imageUrl: event.target.value })}
+            onChange={(event) =>
+              setForm({ ...form, imageUrl: event.target.value })
+            }
             placeholder="Image URL"
           />
-          <button type="submit" style={buttonStyle}>Create</button>
+          <button type="submit" style={buttonStyle}>
+            Create
+          </button>
         </form>
       )}
 
@@ -195,18 +248,41 @@ function BugList() {
       {!loading &&
         bugs.map((bug) => (
           <article key={bug.id} style={rowStyle}>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: "12px" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: "12px",
+              }}
+            >
               <h2 style={{ margin: "0 0 8px" }}>
                 <Link to={`/bugs/${bug.id}`} style={{ color: "#000" }}>
+                  <i
+                    style={{
+                      color: "gray",
+                      fontWeight: "bold",
+                      fontSize: "12px",
+                    }}
+                  >
+                    #{bug.id}
+                  </i>
+                  {" | "}
                   {bug.title}
                 </Link>
               </h2>
-              <span style={{ border: "1px solid #777", padding: "4px 8px", height: "fit-content" }}>
+              <span
+                style={{
+                  border: "1px solid #777",
+                  padding: "4px 8px",
+                  height: "fit-content",
+                }}
+              >
                 {bug.status}
               </span>
             </div>
             <p style={{ margin: "0 0 8px" }}>
-              Author: {bug.authorUsername || "Unknown"} | {formatDate(bug.createdAt)}
+              Author: {bug.authorUsername || "Unknown"} |{" "}
+              {formatDate(bug.createdAt)}
             </p>
             <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
               {(bug.tags || []).map((bugTag) => (
