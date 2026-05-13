@@ -26,9 +26,11 @@ function tokenFor(username, role) {
 }
 
 function loginAs(username = "alice", role = "USER") {
-  cy.window().then((win) => {
-    win.localStorage.setItem("token", tokenFor(username, role));
-    win.localStorage.setItem("user", JSON.stringify({ username, role }));
+  cy.visit("/", {
+    onBeforeLoad(win) {
+      win.localStorage.setItem("token", tokenFor(username, role));
+      win.localStorage.setItem("user", JSON.stringify({ username, role }));
+    },
   });
 }
 
@@ -36,10 +38,11 @@ describe("bugs", () => {
   beforeEach(() => {
     cy.intercept("GET", "**/api/bugs", [bugOne, bugTwo]).as("getBugs");
     cy.intercept("GET", "**/api/bugs/1", bugOne).as("getBug");
+    cy.intercept("GET", "**/api/comments/bug/1", []).as("getComments");
   });
 
   it("loads the bug list and bug detail while unauthenticated", () => {
-    cy.visit("/");
+    cy.visit("/bugs");
     cy.wait("@getBugs");
     cy.contains("Login button broken");
     cy.contains("OPEN");
@@ -49,7 +52,7 @@ describe("bugs", () => {
     cy.contains("Login button broken").click();
     cy.wait("@getBug");
     cy.contains("Clicking login does nothing.");
-    cy.contains("Comments section placeholder.");
+    cy.contains("No comments yet.");
   });
 
   it("updates results when searching by title and filtering by tag", () => {
@@ -92,6 +95,8 @@ describe("bugs", () => {
     cy.contains("button", "Login").click();
     cy.wait("@login");
 
+    cy.contains("a", "Bugs").click();
+    cy.wait("@getBugsAfterCreate");
     cy.contains("button", "Report Bug").click();
     cy.get("[aria-label='Bug title']").type("New profile bug");
     cy.get("[aria-label='Bug description']").type("Profile save fails.");

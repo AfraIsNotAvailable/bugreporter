@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router";
-import api from "../api/axios";
 
 function BugCard({ bug }) {
   const navigate = useNavigate();
