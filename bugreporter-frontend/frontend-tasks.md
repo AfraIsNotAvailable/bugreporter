@@ -24,9 +24,9 @@ React + React Router + Axios. Person 1 sets up shared foundation first — other
 - View all comments: `GET /api/admin/comments`
 
 ### Cypress
-- Register new user → lands on home
-- Login with valid credentials → JWT stored
-- Login with wrong password → error shown
+- Register new user → lands on home -> done
+- Login with valid credentials → JWT stored -> done
+- Login with wrong password → error shown -> done
 - Login with banned user → error shown
 - Admin: ban user → user appears as banned
 - Admin: change role → role updates in table

@@ -149,9 +149,7 @@ public class UserServiceImpl implements UserService {
         }
 
         user.setBanned(true);
-
-
-        userRepository.save(user);
+        User savedUser = userRepository.saveAndFlush(user);
 
 
         RestTemplate restTemplate = new RestTemplate();
@@ -171,7 +169,7 @@ public class UserServiceImpl implements UserService {
             System.out.println("Notification service failed: " + e.getMessage());
         }
 
-        return mapToResponse(user);
+        return mapToResponse(savedUser);
     }
 
 
@@ -181,7 +179,7 @@ public class UserServiceImpl implements UserService {
     public UserResponse unbanUser(Long id) {
         User user = getUserEntityById(id);
         user.setBanned(false);
-        return mapToResponse(userRepository.save(user));
+        return mapToResponse(userRepository.saveAndFlush(user));
     }
 
 
