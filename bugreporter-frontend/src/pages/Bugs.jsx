@@ -20,7 +20,7 @@ function Bugs() {
         console.log("Fetched bugs:", res.data[0]);
         setBugs(res.data);
       })
-      .catch((err) => setError("Failed to load bugs"))
+      .catch(() => setError("Failed to load bugs"))
       .finally(() => setLoading(false));
   }, []);
 

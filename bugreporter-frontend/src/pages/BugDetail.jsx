@@ -178,6 +178,7 @@ function BugDetail() {
             <div style={{ marginBottom: "16px" }}>
               <label>Title:</label>
               <input
+                aria-label="Edit bug title"
                 required
                 style={{ ...inputStyle, marginTop: "6px" }}
                 value={form.title}
@@ -187,6 +188,7 @@ function BugDetail() {
             <div style={{ marginBottom: "16px" }}>
               <label>Description:</label>
               <textarea
+                aria-label="Edit bug description"
                 required
                 style={{ ...inputStyle, marginTop: "6px", minHeight: "140px" }}
                 value={form.text}
@@ -196,6 +198,7 @@ function BugDetail() {
             <div style={{ marginBottom: "16px" }}>
               <label>Image URL:</label>
               <input
+                aria-label="Edit bug image url"
                 style={{ ...inputStyle, marginTop: "6px" }}
                 value={form.imageUrl}
                 onChange={(event) => setForm({ ...form, imageUrl: event.target.value })}
@@ -263,7 +266,12 @@ function BugDetail() {
             </button>
           )}
           {isModerator && (
-            <select value={bug.status} onChange={handleStatus} style={buttonStyle}>
+            <select
+              aria-label="Bug status"
+              value={bug.status}
+              onChange={handleStatus}
+              style={buttonStyle}
+            >
               {statuses.map((status) => (
                 <option key={status} value={status}>{status}</option>
               ))}
