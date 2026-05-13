@@ -205,13 +205,13 @@ class UserServiceImplTest {
     @Test
     void shouldBanUser() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.saveAndFlush(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         UserResponse response = userService.banUser(1L);
 
         assertTrue(response.isBanned());
         verify(userRepository).findById(1L);
-        verify(userRepository).save(user);
+        verify(userRepository).saveAndFlush(user);
     }
 
     @Test
@@ -219,13 +219,13 @@ class UserServiceImplTest {
         user.setBanned(true);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.saveAndFlush(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         UserResponse response = userService.unbanUser(1L);
 
         assertFalse(response.isBanned());
         verify(userRepository).findById(1L);
-        verify(userRepository).save(user);
+        verify(userRepository).saveAndFlush(user);
     }
 
     @Test
