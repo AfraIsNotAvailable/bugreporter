@@ -5,6 +5,10 @@ import App from "./App";
 import { AuthProvider } from "./context/AuthContext";
 import "./index.css";
 
+//fisierul de pornire a aplicatiei React
+
+//montare aplocatie
+//se cauta in index.html elementul cu id-ul root
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>

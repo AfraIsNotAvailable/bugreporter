@@ -54,9 +54,12 @@ function Admin() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  //ruleaza cand componenta se afiseaza prima data 
   useEffect(() => {
+    //fac doua request-uri in paralel ca e mai eficient
     Promise.all([api.get("/admin/bugs"), api.get("/admin/comments")])
-      .then(([bugsRes, commentsRes]) => {
+    //salvez datele   
+    .then(([bugsRes, commentsRes]) => {
         setBugs(bugsRes.data);
         setComments(commentsRes.data);
       })

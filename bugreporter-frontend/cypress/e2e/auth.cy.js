@@ -1,4 +1,6 @@
+//grupeaza mai multe teste legate intre ele 
 describe("Auth tests", () => {
+  //creez un user unic pentru test
   const username = `testuser${Date.now()}`;
   const email = `${username}@test.com`;
   const password = "Password123";
@@ -7,6 +9,7 @@ describe("Auth tests", () => {
   const adminUsername = "ana"; 
   const adminPassword = "ana"; 
 
+  //functie helper ca sa nu repet codul de login pentru admin in fiecare test
   const loginAsAdmin = () => {
     cy.visit("/login");
 

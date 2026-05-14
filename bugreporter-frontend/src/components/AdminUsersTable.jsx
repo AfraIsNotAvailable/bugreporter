@@ -44,6 +44,7 @@ function getErrorMessage(error, fallback) {
   return data?.message || fallback;
 }
 
+//transforma datele venite intr-o forma mai usor de citit
 function formatDate(date) {
   if (!date) {
     return "-";
@@ -72,6 +73,7 @@ function AdminUsersTable({ canChangeRoles = false }) {
   const updateUserInState = (userId, changes) => {
     setUsers((currentUsers) =>
       currentUsers.map((user) =>
+        //daca id-ul cautat returnez o copie actualizata, daca nu ramane neschimbat
         user.id === userId ? { ...user, ...changes } : user,
       ),
     );

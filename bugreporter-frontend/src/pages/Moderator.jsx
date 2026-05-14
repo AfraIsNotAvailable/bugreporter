@@ -36,6 +36,7 @@ const selectStyle = {
   backgroundColor: "#fff",
 };
 
+//statusuri pentru bug-uri
 const statuses = ["OPEN", "IN_PROGRESS", "FIXED", "CLOSED"];
 
 function getErrorMessage(error, fallback) {
@@ -80,6 +81,7 @@ function Moderator() {
         params: { status },
       });
 
+      //actualizez lista locala dupa ce s-a facut schimbarea de status a bug-ului in baza de date 
       setBugs((currentBugs) =>
         currentBugs.map((currentBug) =>
           currentBug.id === bug.id ? response.data : currentBug,

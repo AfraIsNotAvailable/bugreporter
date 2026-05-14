@@ -1,8 +1,14 @@
+//pentru valori care se schimba in componenta gen username, password, error
 import { useState } from "react";
+//pentru redirectionare de cod
 import { useNavigate } from "react-router-dom";
+//asta ii instanta de axios configurata de mine 
 import api from "../api/axios";
+//hooku custom de autentificare
 import { useAuth } from "../context/AuthContext";
 
+
+//extrage mesajul de eroare din raspunsul backend-ului
 function getErrorMessage(error, fallback) {
   const data = error.response?.data;
 
@@ -19,8 +25,10 @@ function Login() {
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
+  //acot functia de login din useAuth
   const { login } = useAuth();
 
+  //centrez formularul pe pagina
   const pageStyle = {
     minHeight: "100vh",
     display: "flex",
@@ -29,6 +37,7 @@ function Login() {
     padding: "24px",
   };
 
+  //controleaza cutia formularului
   const formStyle = {
     width: "100%",
     maxWidth: "360px",
@@ -37,6 +46,7 @@ function Login() {
     borderRadius: "4px",
   };
 
+  //pune spatiu intre campuri
   const fieldStyle = {
     marginBottom: "16px",
   };
@@ -56,18 +66,23 @@ function Login() {
     cursor: "pointer",
   };
 
+  //functia care ruleaza cand userul apasa butonul de login
   const handleSubmit = async (e) => {
+    //ca sa previn refresh-ul la pagina cand e trimis
     e.preventDefault();
     setError("");
 
     try {
+      //request la backend
       const response = await api.post("/auth/login", {
         username,
         password,
       });
 
+      //scot token-ul din raspuns
       const loggedInUser = login(response.data.token);
 
+      //redirectioneaza dupa rol
       if (loggedInUser?.role === "ADMIN") {
         navigate("/admin");
       } else if (loggedInUser?.role === "MODERATOR") {
