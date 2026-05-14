@@ -123,7 +123,7 @@ function CommentCard({ comment, onDelete }) {
   };
 
   return (
-    <div style={cardStyle}>
+    <div data-testid="comment-card" style={cardStyle}>
       <p style={metaStyle}>
         {comment.authorUsername ?? `User #${comment.authorId}`} ·{" "}
         {new Date(comment.createdAt).toLocaleDateString()}
@@ -196,6 +196,7 @@ function CommentCard({ comment, onDelete }) {
 
       {isEditing ? (
         <textarea
+          aria-label="Edit comment text"
           value={editText}
           onChange={(e) => setEditText(e.target.value)}
           style={editStyle}
@@ -208,12 +209,14 @@ function CommentCard({ comment, onDelete }) {
         {!isOwn && (
           <>
             <button
+              aria-label="Upvote"
               style={arrowButtonStyle(vote === "UPVOTE")}
               onClick={() => handleVote("UPVOTE")}
             >
               ▲
             </button>
             <button
+              aria-label="Downvote"
               style={arrowButtonStyle(vote === "DOWNVOTE")}
               onClick={() => handleVote("DOWNVOTE")}
             >
@@ -221,7 +224,7 @@ function CommentCard({ comment, onDelete }) {
             </button>
           </>
         )}
-        <span>{score}</span>
+        <span data-testid="comment-score">{score}</span>
         {canEdit && (
           <div style={{ marginLeft: "auto" }}>
             {isEditing ? (

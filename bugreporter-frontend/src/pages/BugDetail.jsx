@@ -35,6 +35,10 @@ function BugDetail() {
   const [error, setError] = useState("");
   const [comments, setComments] = useState([]);
   const [sortOrder, setSortOrder] = useState("date_desc");
+  const [commentText, setCommentText] = useState("");
+  const [commentImageUrl, setCommentImageUrl] = useState("");
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [commentError, setCommentError] = useState("");
 
   const pageStyle = {
     padding: "24px",
@@ -141,6 +145,26 @@ function BugDetail() {
       setTagInput("");
     } catch (err) {
       setError(err.response?.data?.message || "Could not add tags");
+    }
+  };
+
+  const handleCommentSubmit = async (event) => {
+    event.preventDefault();
+    setCommentError("");
+    setCommentSubmitting(true);
+    try {
+      const payload = { text: commentText };
+      if (commentImageUrl) payload.imageUrl = commentImageUrl;
+      const res = await api.post(`/comments/bug/${id}`, payload);
+      setComments((prev) => [res.data, ...prev]);
+      setCommentText("");
+      setCommentImageUrl("");
+      const bugRes = await getBug(id);
+      setBug(bugRes.data);
+    } catch (err) {
+      setCommentError(err.response?.data?.message || "Could not post comment");
+    } finally {
+      setCommentSubmitting(false);
     }
   };
 
@@ -296,6 +320,43 @@ function BugDetail() {
           }
         />
       ))}
+
+      <div style={{ marginTop: "24px" }}>
+        {isAuthenticated && bug.status !== "FIXED" && bug.status !== "CLOSED" ? (
+          <form onSubmit={handleCommentSubmit}>
+            <h3 style={{ marginTop: 0 }}>Add a comment</h3>
+            <div style={{ marginBottom: "12px" }}>
+              <textarea
+                aria-label="Comment text"
+                required
+                style={{ ...inputStyle, minHeight: "100px" }}
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Write your comment..."
+              />
+            </div>
+            <div style={{ marginBottom: "12px" }}>
+              <input
+                aria-label="Comment image URL"
+                style={inputStyle}
+                value={commentImageUrl}
+                onChange={(e) => setCommentImageUrl(e.target.value)}
+                placeholder="Image URL (optional)"
+              />
+            </div>
+            {commentError && <p style={{ color: "red", margin: "0 0 12px" }}>{commentError}</p>}
+            <button type="submit" style={buttonStyle} disabled={commentSubmitting}>
+              {commentSubmitting ? "Posting..." : "Post Comment"}
+            </button>
+          </form>
+        ) : (
+          <p style={{ color: "#666", fontSize: "14px" }}>
+            {!isAuthenticated
+              ? "Log in to post a comment."
+              : "Commenting is disabled on FIXED or CLOSED bugs."}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

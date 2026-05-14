@@ -95,7 +95,7 @@ function Admin() {
               <tbody>
                 {bugs.length === 0 && (
                   <tr>
-                    <td style={tdStyle} colSpan="5">
+                    <td style={tdStyle} colSpan="6">
                       No bugs found.
                     </td>
                   </tr>
