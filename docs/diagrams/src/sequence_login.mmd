@@ -1,0 +1,34 @@
+sequenceDiagram
+    actor User
+    participant FE as React Frontend
+    participant Filter as JwtAuthFilter
+    participant AC as AuthController
+    participant AS as AuthService
+    participant DB as PostgreSQL
+
+    User->>FE: Enter username + password, click Login
+    FE->>AC: POST /api/auth/login { username, password }
+    Note over Filter: /api/auth/** bypasses JWT filter
+    AC->>AS: authenticate(LoginRequest)
+    AS->>DB: SELECT * FROM users WHERE username=?
+    DB-->>AS: User row
+    AS->>AS: Check user.banned
+    alt user is banned
+        AS-->>AC: throw RuntimeException("User is banned")
+        AC-->>FE: 400 Bad Request
+        FE-->>User: Error message shown
+    else user not banned
+        AS->>AS: passwordEncoder.matches(password, hash)
+        alt wrong password
+            AS-->>AC: throw RuntimeException("Invalid password")
+            AC-->>FE: 400 Bad Request
+            FE-->>User: Error message shown
+        else password correct
+            AS->>AS: jwtService.generateToken(username, role)
+            AS-->>AC: JWT string
+            AC-->>FE: 200 { token }
+            FE->>FE: localStorage.setItem("token", jwt)
+            FE->>FE: decode payload → { username, role }
+            FE-->>User: Redirect to home
+        end
+    end

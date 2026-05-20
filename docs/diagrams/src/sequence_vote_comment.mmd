@@ -1,0 +1,38 @@
+sequenceDiagram
+    actor User
+    participant FE as React Frontend
+    participant CC as CommentController
+    participant CS as CommentService
+    participant DB as PostgreSQL
+
+    User->>FE: Click Upvote on comment
+    FE->>FE: Check: vote === "UPVOTE"? removing = true/false
+    FE->>CC: POST /api/comments/{id}/vote { voteType: "UPVOTE" }
+    CC->>CS: voteComment(commentId, userId, UPVOTE)
+    CS->>DB: SELECT * FROM comments WHERE id=? FOR UPDATE
+    Note over DB: Pessimistic write lock acquired
+    DB-->>CS: Comment row (locked)
+    CS->>CS: Check author.id != userId (no self-vote)
+    CS->>DB: SELECT * FROM comment_votes\nWHERE comment_id=? AND user_id=?
+    DB-->>CS: Existing vote (or null)
+
+    alt No existing vote
+        CS->>DB: INSERT INTO comment_votes (UPVOTE, user_id, comment_id)
+        CS->>DB: UPDATE comments SET score = score+1
+        CS->>DB: UPDATE users SET score = score+5.0 WHERE id=author_id
+    else Same vote (toggle off)
+        CS->>DB: DELETE FROM comment_votes WHERE id=?
+        CS->>DB: UPDATE comments SET score = score-1
+        CS->>DB: UPDATE users SET score = score-5.0 WHERE id=author_id
+    else Opposite vote (flip)
+        CS->>DB: UPDATE comment_votes SET vote_type=UPVOTE
+        CS->>DB: UPDATE comments SET score = score+2
+        CS->>DB: UPDATE users SET score = score+7.5 WHERE id=author_id
+        CS->>DB: UPDATE users SET score = score+1.5 WHERE id=voter_id
+    end
+
+    Note over DB: Lock released on commit
+    CS-->>CC: Updated Comment entity
+    CC-->>FE: 200 CommentResponse { score, userVote, authorScore }
+    FE->>FE: Update score display optimistically
+    FE-->>User: Vote button highlighted, score updated

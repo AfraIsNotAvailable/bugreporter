@@ -1,0 +1,63 @@
+erDiagram
+    users {
+        BIGINT id PK
+        VARCHAR username UK
+        VARCHAR email UK
+        VARCHAR password
+        VARCHAR role
+        BOOLEAN banned
+        TIMESTAMP created_at
+        VARCHAR phone_number UK
+        DOUBLE score
+    }
+    bugs {
+        BIGINT id PK
+        VARCHAR title
+        VARCHAR text
+        VARCHAR image_url
+        VARCHAR status
+        TIMESTAMP created_at
+        BIGINT author_id FK
+        INTEGER vote_score
+    }
+    tags {
+        BIGINT id PK
+        VARCHAR name UK
+    }
+    bug_tags {
+        BIGINT bug_id FK
+        BIGINT tag_id FK
+    }
+    bug_votes {
+        BIGINT id PK
+        VARCHAR vote_type
+        TIMESTAMP created_at
+        BIGINT user_id FK
+        BIGINT bug_id FK
+    }
+    comments {
+        BIGINT id PK
+        VARCHAR text
+        VARCHAR image_url
+        TIMESTAMP created_at
+        INTEGER score
+        BIGINT author_id FK
+        BIGINT bug_id FK
+    }
+    comment_votes {
+        BIGINT id PK
+        VARCHAR vote_type
+        TIMESTAMP created_at
+        BIGINT user_id FK
+        BIGINT comment_id FK
+    }
+
+    users ||--o{ bugs : "authors"
+    users ||--o{ comments : "authors"
+    users ||--o{ bug_votes : "casts"
+    users ||--o{ comment_votes : "casts"
+    bugs ||--o{ comments : "has"
+    bugs ||--o{ bug_votes : "receives"
+    bugs ||--o{ bug_tags : "tagged via"
+    tags ||--o{ bug_tags : "used in"
+    comments ||--o{ comment_votes : "receives"

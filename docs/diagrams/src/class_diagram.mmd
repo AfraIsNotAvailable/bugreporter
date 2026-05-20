@@ -1,0 +1,89 @@
+classDiagram
+    class BugreporterApplication {
+        +main(String[] args)$
+    }
+
+    class AuthController {
+        -AuthService authService
+        +login(LoginRequest) AuthResponse
+        +register(RegisterRequest) AuthResponse
+    }
+    class BugController {
+        -BugService bugService
+        -UserRepository userRepository
+        -BugVoteRepository bugVoteRepository
+        +listAll(Authentication) List~BugResponse~
+        +getBugById(Long, Authentication) BugResponse
+        +reportBug(BugRequest, Authentication) BugResponse
+        +updateBug(Long, BugRequest, Authentication) BugResponse
+        +deleteBug(Long, Authentication) void
+        +voteBug(Long, Authentication, VoteRequest) BugResponse
+        +resolveBug(Long, Authentication) BugResponse
+        +filterBugs(...) List~BugResponse~
+        +addTags(Long, List~String~) BugResponse
+    }
+    class CommentController {
+        -CommentService commentService
+        -UserRepository userRepository
+        +createComment(Long, Authentication, CommentRequest) CommentResponse
+        +getCommentsByBugId(Long, Authentication) List~CommentResponse~
+        +updateComment(Long, Authentication, CommentRequest) CommentResponse
+        +deleteComment(Long, Authentication) void
+        +voteComment(Long, Authentication, VoteRequest) CommentResponse
+    }
+    class AdminController {
+        -UserService userService
+        +getAllUsers() List~UserResponse~
+        +getAllBugs() List~BugResponse~
+        +getAllComments() List~CommentResponse~
+        +toggleBan(Long, boolean) UserResponse
+        +changeRole(Long, Role) UserResponse
+    }
+
+    class AuthService {
+        +authenticate(LoginRequest) String
+        +register(RegisterRequest) String
+    }
+    class BugService {
+        +createBug(BugRequest, Long) Bug
+        +getBugById(Long) Bug
+        +updateBug(Long, BugRequest, Long, Role) Bug
+        +deleteBug(Long, Long, Role) void
+        +voteBug(Long, Long, VoteType) Bug
+        +resolveBug(Long, Long) Bug
+        +addTagsToBug(Long, List~String~) Bug
+        +getAllBugs() List~Bug~
+        +getBugsByTag(String) List~Bug~
+        +searchByTitle(String) List~Bug~
+        +getBugsByAuthor(Long) List~Bug~
+    }
+    class CommentService {
+        +createComment(Long, Long, String, String) Comment
+        +getCommentsByBugId(Long, Long) List~CommentResponse~
+        +updateComment(Long, Long, Role, String, String) Comment
+        +deleteComment(Long, Long, Role) void
+        +voteComment(Long, Long, VoteType) Comment
+    }
+    class UserServiceImpl {
+        +createUser(UserRequest) UserResponse
+        +getAllUsers() List~UserResponse~
+        +getUserById(Long) UserResponse
+        +updateUser(Long, UserRequest) UserResponse
+        +banUser(Long) UserResponse
+        +unbanUser(Long) UserResponse
+    }
+
+    class JwtService {
+        +generateToken(String, Role) String
+        +extractUsername(String) String
+        +isTokenValid(String, String) boolean
+    }
+    class JwtAuthenticationFilter {
+        +doFilterInternal(request, response, chain)
+    }
+
+    AuthController --> AuthService
+    BugController --> BugService
+    CommentController --> CommentService
+    AdminController --> UserServiceImpl
+    JwtAuthenticationFilter --> JwtService

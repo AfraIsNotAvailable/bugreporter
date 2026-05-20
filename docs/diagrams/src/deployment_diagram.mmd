@@ -1,0 +1,25 @@
+graph TB
+    subgraph Dev["Developer Machine"]
+        subgraph Docker["Docker Compose"]
+            PG["postgres:17\ncontainer: bugreporter-db\n5436:5432\nVolume: postgres-data"]
+            MP["axllent/mailpit:v1.27\ncontainer: bugreporter-mail\n1025:1025 (SMTP)\n8025:8025 (Web UI)"]
+        end
+        subgraph JVM1["JVM Process (Java 21)"]
+            BE["Spring Boot Backend\nport 8081\nHibernate ddl-auto=update"]
+        end
+        subgraph JVM2["JVM Process (Java 25)"]
+            NS["Notification Service\nport 8082\nGradle"]
+        end
+        subgraph Node["Node.js Process"]
+            FE["Vite Dev Server\nport 5173\nHMR enabled"]
+        end
+    end
+
+    Browser["Browser"] -->|"HTTP :5173"| FE
+    FE -->|"HTTP :8081/api"| BE
+    BE -->|"JDBC :5436"| PG
+    BE -->|"SMTP :1025"| MP
+    BE -->|"HTTP :8082"| NS
+    NS -->|"SMTP :1025"| MP
+    NS -->|"HTTPS"| Twilio["Twilio API"]
+    BE -.->|"auto-starts if ports closed"| Docker

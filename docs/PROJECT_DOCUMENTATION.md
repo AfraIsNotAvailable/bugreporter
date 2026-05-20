@@ -36,6 +36,8 @@ The backend is a REST API built with Spring Boot. The frontend is a React single
 
 ## 2. Use Cases
 
+![Use Case Diagram](diagrams/use_case_diagram.svg)
+
 ### Regular User
 - Register an account with username, email, password, and optional phone number
 - Log in and receive a JWT session token
@@ -157,6 +159,8 @@ Runs on port 8082. Called by the main backend's `UserServiceImpl.banUser()` via 
 
 ## 4. Project Structure
 
+![Package Diagram](diagrams/package_diagram.svg)
+
 ```
 bugreporter/
 ├── src/main/java/com/group11/bugreporter/
@@ -264,6 +268,10 @@ bugreporter/
 ---
 
 ## 5. Database Schema
+
+![Database Diagram](diagrams/database_diagram.svg)
+
+![Data Model](diagrams/data_model.svg)
 
 ### Tables and Relationships
 
@@ -457,6 +465,14 @@ All endpoints are prefixed with `/api`. The frontend's Axios instance uses `http
 
 ## 7. Backend — Auth & Security
 
+![Component Diagram](diagrams/component_diagram.svg)
+
+![Design Model](diagrams/design_model.svg)
+
+![Sequence: Login](diagrams/sequence_login.svg)
+
+![Sequence: Ban User](diagrams/sequence_ban_user.svg)
+
 ### Startup Sequence
 
 On every `main()` call:
@@ -543,6 +559,12 @@ Enforced in two places:
 
 ## 8. Backend — Bugs
 
+![Domain Model](diagrams/domain_model.svg)
+
+![Class Diagram](diagrams/class_diagram.svg)
+
+![Sequence: Create Bug](diagrams/sequence_create_bug.svg)
+
 ### Bug Status Lifecycle
 
 ```
@@ -598,6 +620,8 @@ The `fromEntity` static method is the single point of conversion from the intern
 ---
 
 ## 9. Backend — Comments & Voting
+
+![Sequence: Vote Comment](diagrams/sequence_vote_comment.svg)
 
 ### Comment Score — Denormalization
 
@@ -689,6 +713,8 @@ Users and bugs are skipped if they already exist (by ID or username). Comments a
 ---
 
 ## 11. Frontend — Foundation & Routing
+
+![Deployment Diagram](diagrams/deployment_diagram.svg)
 
 ### AuthContext
 
@@ -914,6 +940,8 @@ Applied via the `style` prop: `<button style={buttonStyle}>`. For variations, sp
 ---
 
 ## 15. Testing
+
+![Use Case Diagram](diagrams/use_case_diagram.svg)
 
 ### Backend Tests
 
