@@ -127,6 +127,19 @@
     }
     .card h3 { margin: 0 0 8px; font-size: 1rem; }
     .card p { margin: 0; font-size: 0.875rem; color: var(--muted); }
+    a.card {
+      display: block; text-decoration: none; color: inherit;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+    }
+    a.card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 16px rgba(37,99,235,0.12);
+      transform: translateY(-2px);
+    }
+    a.card .gh-link {
+      margin-top: 10px; font-size: 0.78rem; color: var(--accent);
+      display: flex; align-items: center; gap: 4px;
+    }
     .card-icon { font-size: 1.5rem; margin-bottom: 10px; }
 
     /* ── ROLE CARDS ── */
@@ -199,8 +212,51 @@
       overflow: hidden; margin: 20px 0;
       background: var(--sidebar-bg);
     }
-    .diagram-wrap img { width: 100%; display: block; }
+    .diagram-wrap img { width: 100%; display: block; cursor: zoom-in; transition: opacity 0.15s; }
+    .diagram-wrap img:hover { opacity: 0.85; }
     .diagram-caption { padding: 8px 16px; font-size: 0.78rem; color: var(--muted); background: var(--sidebar-bg); border-top: 1px solid var(--border); text-align: center; }
+
+    /* ── LIGHTBOX ── */
+    #lightbox {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.85);
+      align-items: center; justify-content: center;
+    }
+    #lightbox.open { display: flex; }
+    #lightbox-close {
+      position: fixed; top: 16px; right: 20px;
+      background: rgba(255,255,255,0.15); border: none;
+      color: #fff; font-size: 1.6rem; line-height: 1;
+      width: 40px; height: 40px; border-radius: 50%;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      z-index: 1001;
+    }
+    #lightbox-close:hover { background: rgba(255,255,255,0.3); }
+    #lightbox-hint {
+      position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+      color: rgba(255,255,255,0.55); font-size: 0.78rem; pointer-events: none;
+      white-space: nowrap;
+    }
+    #lightbox-canvas {
+      position: fixed; inset: 0; overflow: hidden; cursor: grab;
+    }
+    #lightbox-canvas.grabbing { cursor: grabbing; }
+    #lightbox-canvas img {
+      position: absolute; transform-origin: 0 0;
+      user-select: none; -webkit-user-drag: none;
+      max-width: none;
+    }
+    #lightbox-zoom {
+      position: fixed; bottom: 48px; right: 20px;
+      display: flex; flex-direction: column; gap: 6px; z-index: 1001;
+    }
+    #lightbox-zoom button {
+      width: 36px; height: 36px; border-radius: 6px;
+      background: rgba(255,255,255,0.15); border: none;
+      color: #fff; font-size: 1.2rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #lightbox-zoom button:hover { background: rgba(255,255,255,0.3); }
 
     /* ── ACCORDION ── */
     details { border: 1px solid var(--border); border-radius: 8px; margin: 10px 0; }
@@ -875,23 +931,49 @@ gradle bootRun</code></pre>
 <section id="team">
   <h2>Team</h2>
   <div class="card-grid">
-    <div class="card">
+    <a class="card" href="https://github.com/AfraIsNotAvailable" target="_blank" rel="noopener">
       <h3>Afrasinei Serban</h3>
       <p>Comments (frontend &amp; backend), backend security, JWT filter, voting logic</p>
-    </div>
-    <div class="card">
+      <div class="gh-link">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        @AfraIsNotAvailable ↗
+      </div>
+    </a>
+    <a class="card" href="https://github.com/aleberar" target="_blank" rel="noopener">
       <h3>Berar Alexandra</h3>
       <p>Auth &amp; admin (frontend &amp; backend), frontend setup, user management, notifications</p>
-    </div>
-    <div class="card">
+      <div class="gh-link">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        @aleberar ↗
+      </div>
+    </a>
+    <a class="card" href="https://github.com/PavelCata" target="_blank" rel="noopener">
       <h3>Pavel Catalin</h3>
       <p>Bugs (frontend &amp; backend), tag system, search &amp; filter, bug status lifecycle</p>
-    </div>
+      <div class="gh-link">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        @PavelCata ↗
+      </div>
+    </a>
   </div>
 </section>
 
 </main>
 </div><!-- /.layout -->
+
+<!-- ═══════════════ LIGHTBOX ═══════════════ -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+  <button id="lightbox-close" onclick="closeLightbox()" aria-label="Close">✕</button>
+  <div id="lightbox-canvas">
+    <img id="lightbox-img" src="" alt="" />
+  </div>
+  <div id="lightbox-zoom">
+    <button onclick="lbZoom(1.25)" aria-label="Zoom in">+</button>
+    <button onclick="lbZoom(0.8)" aria-label="Zoom out">−</button>
+    <button onclick="lbReset()" aria-label="Reset" title="Reset view" style="font-size:.75rem">⟳</button>
+  </div>
+  <div id="lightbox-hint">Scroll to zoom · Drag to pan · Click outside or Esc to close</div>
+</div>
 
 <script>
   // ── Sidebar toggle (mobile) ──
@@ -928,6 +1010,146 @@ gradle bootRun</code></pre>
       document.getElementById('sidebar').classList.remove('open');
     });
   });
+
+  // ══════════════════════════════════════════
+  // ── LIGHTBOX ──
+  // ══════════════════════════════════════════
+  let lbScale = 1, lbX = 0, lbY = 0;
+  let lbDragging = false, lbStartX = 0, lbStartY = 0, lbOriginX = 0, lbOriginY = 0;
+
+  const lb      = document.getElementById('lightbox');
+  const lbImg   = document.getElementById('lightbox-img');
+  const lbCanvas = document.getElementById('lightbox-canvas');
+
+  function applyTransform() {
+    lbImg.style.transform = `translate(${lbX}px, ${lbY}px) scale(${lbScale})`;
+  }
+
+  function lbCenter() {
+    const vw = lb.clientWidth, vh = lb.clientHeight;
+    const nw = lbImg.naturalWidth  || lbImg.width  || 800;
+    const nh = lbImg.naturalHeight || lbImg.height || 600;
+    // fit inside viewport with some padding
+    const fitScale = Math.min((vw * 0.92) / nw, (vh * 0.88) / nh, 1);
+    lbScale = fitScale;
+    lbX = (vw - nw * lbScale) / 2;
+    lbY = (vh - nh * lbScale) / 2;
+    applyTransform();
+  }
+
+  function openLightbox(src, alt) {
+    lbImg.src = src;
+    lbImg.alt = alt || '';
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    lbImg.onload = lbCenter;
+    // if already cached, onload may not fire
+    if (lbImg.complete) lbCenter();
+  }
+
+  function closeLightbox() {
+    lb.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function lbReset() { lbCenter(); }
+
+  function lbZoom(factor) {
+    const vw = lb.clientWidth, vh = lb.clientHeight;
+    // zoom toward center of viewport
+    const cx = vw / 2, cy = vh / 2;
+    const newScale = Math.min(Math.max(lbScale * factor, 0.1), 10);
+    const ratio = newScale / lbScale;
+    lbX = cx - ratio * (cx - lbX);
+    lbY = cy - ratio * (cy - lbY);
+    lbScale = newScale;
+    applyTransform();
+  }
+
+  // click on diagram images opens lightbox
+  document.querySelectorAll('.diagram-wrap img').forEach(img => {
+    img.addEventListener('click', () => openLightbox(img.src, img.alt));
+  });
+
+  // close on backdrop click
+  lbCanvas.addEventListener('click', e => {
+    if (!lbDragging && e.target === lbCanvas) closeLightbox();
+  });
+
+  // Esc key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeLightbox();
+  });
+
+  // scroll to zoom
+  lbCanvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    const rect = lbCanvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const factor = e.deltaY < 0 ? 1.12 : 0.88;
+    const newScale = Math.min(Math.max(lbScale * factor, 0.1), 10);
+    const ratio = newScale / lbScale;
+    lbX = mx - ratio * (mx - lbX);
+    lbY = my - ratio * (my - lbY);
+    lbScale = newScale;
+    applyTransform();
+  }, { passive: false });
+
+  // drag to pan
+  lbCanvas.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    lbDragging = false;
+    lbStartX = e.clientX; lbStartY = e.clientY;
+    lbOriginX = lbX; lbOriginY = lbY;
+    lbCanvas.classList.add('grabbing');
+    const onMove = ev => {
+      const dx = ev.clientX - lbStartX, dy = ev.clientY - lbStartY;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) lbDragging = true;
+      lbX = lbOriginX + dx; lbY = lbOriginY + dy;
+      applyTransform();
+    };
+    const onUp = () => {
+      lbCanvas.classList.remove('grabbing');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      // reset lbDragging after click event fires
+      setTimeout(() => { lbDragging = false; }, 0);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  // touch pan + pinch zoom
+  let lbTouches = [];
+  lbCanvas.addEventListener('touchstart', e => {
+    lbTouches = Array.from(e.touches);
+    lbOriginX = lbX; lbOriginY = lbY;
+  }, { passive: true });
+
+  lbCanvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    const touches = Array.from(e.touches);
+    if (touches.length === 1 && lbTouches.length === 1) {
+      lbX = lbOriginX + touches[0].clientX - lbTouches[0].clientX;
+      lbY = lbOriginY + touches[0].clientY - lbTouches[0].clientY;
+    } else if (touches.length === 2 && lbTouches.length === 2) {
+      const prevDist = Math.hypot(lbTouches[0].clientX - lbTouches[1].clientX, lbTouches[0].clientY - lbTouches[1].clientY);
+      const newDist  = Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+      if (prevDist > 0) {
+        const factor = newDist / prevDist;
+        const cx = (touches[0].clientX + touches[1].clientX) / 2;
+        const cy = (touches[0].clientY + touches[1].clientY) / 2;
+        const newScale = Math.min(Math.max(lbScale * factor, 0.1), 10);
+        const ratio = newScale / lbScale;
+        lbX = cx - ratio * (cx - lbX);
+        lbY = cy - ratio * (cy - lbY);
+        lbScale = newScale;
+      }
+    }
+    lbTouches = touches;
+    applyTransform();
+  }, { passive: false });
 </script>
 </body>
 </html>
