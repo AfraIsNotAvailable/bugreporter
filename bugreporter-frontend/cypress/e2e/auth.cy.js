@@ -118,6 +118,12 @@ it("Login with banned user -> error shown", () => {
     .should("be.oneOf", [400, 401, 403]);
 
   cy.url().should("include", "/login");
+  cy.contains("This user got banned").should("be.visible");
+  cy.contains("button", "OK").click();
+  cy.contains("This user got banned").should("not.exist");
+  cy.window().then((win) => {
+    expect(win.localStorage.getItem("token")).to.be.null;
+  });
 });
 
   it("Admin: change role -> role updates in table", () => {
