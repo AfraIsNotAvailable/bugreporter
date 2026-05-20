@@ -164,14 +164,14 @@ describe("bugs", () => {
     cy.get("[aria-label='Bug status']").should("not.exist");
   });
 
-  it("lets moderator or admin delete another user's bug but not edit it", () => {
+  it("lets moderator or admin edit and delete another user's bug", () => {
     loginAs("mod", "MODERATOR");
     cy.intercept("DELETE", "**/api/bugs/1", { statusCode: 204 }).as("deleteBug");
     cy.intercept("GET", "**/api/bugs", [bugTwo]).as("getAfterDelete");
 
     cy.visit("/bugs/1");
     cy.wait("@getBug");
-    cy.contains("button", "Edit").should("not.exist");
+    cy.contains("button", "Edit").should("be.visible");
     cy.contains("button", "Delete").click();
     cy.wait("@deleteBug");
     cy.wait("@getAfterDelete");
