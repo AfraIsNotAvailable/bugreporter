@@ -46,6 +46,10 @@ public class User {
     @Column(nullable = true, unique = true)
     private String phoneNumber;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Double score = 0.0;
+
 
     //metoda ca sa pun timpu la createdAt
     @PrePersist

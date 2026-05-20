@@ -125,8 +125,13 @@ function CommentCard({ comment, onDelete }) {
   return (
     <div data-testid="comment-card" style={cardStyle}>
       <p style={metaStyle}>
-        {comment.authorUsername ?? `User #${comment.authorId}`} ·{" "}
-        {new Date(comment.createdAt).toLocaleDateString()}
+        {comment.authorUsername ?? `User #${comment.authorId}`}
+        {comment.authorScore !== undefined && (
+          <span style={{ color: (comment.authorScore ?? 0) > 0 ? "#2a7a2a" : (comment.authorScore ?? 0) < 0 ? "#b00" : "#666", fontWeight: "bold" }}>
+            {" "}[{(comment.authorScore ?? 0) > 0 ? `+${comment.authorScore}` : comment.authorScore ?? 0}]
+          </span>
+        )}
+        {" · "}{new Date(comment.createdAt).toLocaleDateString()}
       </p>
 
       {canEdit && (

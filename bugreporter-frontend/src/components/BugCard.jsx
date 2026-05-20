@@ -1,7 +1,12 @@
 import { useNavigate } from "react-router";
+import { useAuth } from "../context/AuthContext";
 
 function BugCard({ bug }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const score = bug.voteScore ?? 0;
+  const scoreColor = score > 0 ? "#2a7a2a" : score < 0 ? "#b00" : "#666";
 
   const cardStyle = {
     padding: "16px",
@@ -35,7 +40,17 @@ function BugCard({ bug }) {
         {bug.title}
       </h2>
       <p style={metaStyle}>
-        {bug.authorUsername} · {new Date(bug.createdAt).toLocaleDateString()}
+        {bug.authorUsername}
+        {bug.authorScore !== undefined && (
+          <span style={{ color: (bug.authorScore ?? 0) > 0 ? "#2a7a2a" : (bug.authorScore ?? 0) < 0 ? "#b00" : "#666" }}>
+            {" "}[{(bug.authorScore ?? 0) > 0 ? `+${bug.authorScore}` : bug.authorScore ?? 0}]
+          </span>
+        )}
+        {" · "}{new Date(bug.createdAt).toLocaleDateString()}
+        {" · "}
+        <span style={{ color: scoreColor, fontWeight: "bold" }}>
+          {score > 0 ? `+${score}` : score}
+        </span>
       </p>
       <p style={descStyle}>{bug.text}</p>
     </div>

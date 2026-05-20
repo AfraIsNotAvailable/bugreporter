@@ -51,21 +51,33 @@ public class CommentService {
             throw new ForbiddenException("Users cannot vote on their own comments");
         }
 
+        User author = comment.getAuthor();
+
         Optional<CommentVote> existingVoteOpt = commentVoteRepository.findByCommentIdAndUserId(commentId, requestingUserId);
         if (existingVoteOpt.isPresent()) {
             CommentVote existingVote = existingVoteOpt.get();
             if (existingVote.getVoteType() == voteType) {
-                // User is trying to cast the same vote again, so we remove the existing vote
+                // removing vote
                 commentVoteRepository.delete(existingVote);
                 comment.setScore(comment.getScore() + (voteType == VoteType.UPVOTE ? -1 : 1));
+                author.setScore(author.getScore() + (voteType == VoteType.UPVOTE ? -5.0 : 2.5));
+                if (voteType == VoteType.DOWNVOTE) {
+                    user.setScore(user.getScore() + 1.5);
+                }
             } else {
-                // User is changing their vote, so we update the existing vote
+                // flipping vote
                 existingVote.setVoteType(voteType);
                 commentVoteRepository.save(existingVote);
                 comment.setScore(comment.getScore() + (voteType == VoteType.UPVOTE ? 2 : -2));
+                author.setScore(author.getScore() + (voteType == VoteType.UPVOTE ? 7.5 : -7.5));
+                if (voteType == VoteType.DOWNVOTE) {
+                    user.setScore(user.getScore() - 1.5);
+                } else {
+                    user.setScore(user.getScore() + 1.5);
+                }
             }
         } else {
-            // No existing vote, so we create a new one
+            // new vote
             CommentVote newVote = CommentVote.builder()
                     .comment(comment)
                     .user(user)
@@ -73,6 +85,15 @@ public class CommentService {
                     .build();
             commentVoteRepository.save(newVote);
             comment.setScore(comment.getScore() + (voteType == VoteType.UPVOTE ? 1 : -1));
+            author.setScore(author.getScore() + (voteType == VoteType.UPVOTE ? 5.0 : -2.5));
+            if (voteType == VoteType.DOWNVOTE) {
+                user.setScore(user.getScore() - 1.5);
+            }
+        }
+
+        userRepository.save(author);
+        if (!user.getId().equals(author.getId())) {
+            userRepository.save(user);
         }
         return commentRepository.save(comment);
     }

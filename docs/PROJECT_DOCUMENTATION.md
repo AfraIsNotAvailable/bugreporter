@@ -276,7 +276,8 @@ users
 ├── role (USER | MODERATOR | ADMIN)
 ├── banned
 ├── created_at
-└── phone_number (UNIQUE, nullable)
+├── phone_number (UNIQUE, nullable)
+└── score (default 0.0)
 
 bugs
 ├── id (PK)
@@ -285,7 +286,8 @@ bugs
 ├── image_url (nullable)
 ├── status (OPEN | IN_PROGRESS | FIXED | CLOSED)
 ├── created_at
-└── author_id (FK → users.id)
+├── author_id (FK → users.id)
+└── vote_score (default 0)
 
 tags
 ├── id (PK)
@@ -311,6 +313,14 @@ comment_votes
 ├── user_id (FK → users.id)
 └── comment_id (FK → comments.id)
 UNIQUE (comment_id, user_id)
+
+bug_votes
+├── id (PK)
+├── vote_type (UPVOTE | DOWNVOTE)
+├── created_at
+├── user_id (FK → users.id)
+└── bug_id (FK → bugs.id)
+UNIQUE (bug_id, user_id)
 ```
 
 ### Key Design Decisions
@@ -376,6 +386,7 @@ All endpoints are prefixed with `/api`. The frontend's Axios instance uses `http
 | POST | `/bugs/{id}/tags` | Yes | `BugResponse` | Add tags (raw `["tag1","tag2"]` body) |
 | PATCH | `/bugs/{id}/resolve` | Yes (author only) | `BugResponse` | Set status to FIXED |
 | PATCH | `/bugs/{id}/status?status=...` | MODERATOR | `BugResponse` | Set any status |
+| POST | `/bugs/{id}/vote` | Yes | `BugResponse` | Vote on bug; `{ voteType: "UPVOTE"\|"DOWNVOTE" }` |
 
 ### Comments — `/api/comments`
 > GET is public. All write operations require JWT.
@@ -405,7 +416,10 @@ All endpoints are prefixed with `/api`. The frontend's Axios instance uses `http
   "status": "OPEN",
   "createdAt": "2026-05-01T12:00:00",
   "authorUsername": "alice",
-  "tags": ["auth", "ui"]
+  "tags": ["auth", "ui"],
+  "voteScore": 3,
+  "userVote": "UPVOTE",
+  "authorScore": 12.5
 }
 ```
 
@@ -420,7 +434,8 @@ All endpoints are prefixed with `/api`. The frontend's Axios instance uses `http
   "authorUsername": "alice",
   "createdAt": "2026-05-02T09:30:00",
   "score": 5,
-  "userVote": "UPVOTE"
+  "userVote": "UPVOTE",
+  "authorScore": 47.5
 }
 ```
 
@@ -433,7 +448,8 @@ All endpoints are prefixed with `/api`. The frontend's Axios instance uses `http
   "role": "ADMIN",
   "banned": false,
   "createdAt": "2026-03-01T09:00:00",
-  "phoneNumber": "07xxxxxxxx"
+  "phoneNumber": "07xxxxxxxx",
+  "score": 0.0
 }
 ```
 
