@@ -1,0 +1,78 @@
+graph TD
+    subgraph root["com.group11.bugreporter"]
+        APP["BugreporterApplication"]
+    end
+    subgraph config["config"]
+        SC["SecurityConfig"]
+        DC["DockerComposeBootstrap"]
+        DD["DemoData"]
+        JC["JacksonConfig"]
+    end
+    subgraph controller["controller"]
+        AUC["AuthController"]
+        BUC["BugController"]
+        COC["CommentController"]
+        USC["UserController"]
+        ADC["AdminController"]
+    end
+    subgraph service["service"]
+        AUS["AuthService"]
+        BUS["BugService"]
+        COS["CommentService"]
+        USI["UserService (interface)"]
+        USIM["UserServiceImpl"]
+    end
+    subgraph repository["repository"]
+        UR["UserRepository"]
+        BR["BugRepository"]
+        CR["CommentRepository"]
+        BVR["BugVoteRepository"]
+        CVR["CommentVoteRepository"]
+        TR["TagRepository"]
+    end
+    subgraph entity["entity"]
+        UE["User"]
+        BE["Bug"]
+        CE["Comment"]
+        BVE["BugVote"]
+        CVE["CommentVote"]
+        TE["Tag"]
+        subgraph enums["entity/enums"]
+            ROLE["Role"]
+            BS["BugStatus"]
+            VT["VoteType"]
+        end
+    end
+    subgraph dto["dto"]
+        subgraph request["request"]
+            LR["LoginRequest"]
+            RR["RegisterRequest"]
+            BRQ["BugRequest"]
+            CRQ["CommentRequest"]
+            VRQ["VoteRequest"]
+        end
+        subgraph response["response"]
+            AR["AuthResponse"]
+            BRS["BugResponse"]
+            CRS["CommentResponse"]
+            URS["UserResponse"]
+        end
+    end
+    subgraph security["security"]
+        JWT["JwtService"]
+        JWTF["JwtAuthenticationFilter"]
+    end
+    subgraph exception["exception"]
+        GEH["GlobalExceptionHandler"]
+        RNF["ResourceNotFoundException"]
+        FE["ForbiddenException"]
+        IVT["InvalidVoteTypeException"]
+    end
+
+    root --> config & controller & service & repository & entity & dto & security & exception
+    controller --> service
+    controller --> dto
+    service --> repository
+    service --> entity
+    repository --> entity
+    security --> repository

@@ -1,0 +1,41 @@
+graph TB
+    subgraph Browser["Browser (Client)"]
+        FE["React 19 SPA\n(Vite 8, port 5173)\n──────────────────\nAuthContext · PrivateRoute\nBugList · BugDetail\nCommentCard · BugCard\nAdmin · Moderator"]
+    end
+
+    subgraph Backend["Backend (Spring Boot 4, port 8081)"]
+        AC["AuthController"]
+        BC["BugController"]
+        CC["CommentController"]
+        UC["UserController"]
+        ADC["AdminController"]
+        AS["AuthService"]
+        BS["BugService"]
+        CS["CommentService"]
+        US["UserServiceImpl"]
+        SEC["JwtAuthFilter\nSecurityConfig"]
+        REPO["Repositories\n(JPA/Hibernate)"]
+    end
+
+    subgraph Infra["Infrastructure (Docker Compose)"]
+        PG["PostgreSQL 17\nport 5436"]
+        MP["Mailpit\nSMTP 1025 / UI 8025"]
+    end
+
+    subgraph NS["Notification Service (Spring Boot 4, port 8082)"]
+        NSC["NotificationController"]
+        NSS["NotificationService\n(Email + SMS/Twilio)"]
+    end
+
+    FE -->|"HTTP/REST + JWT"| SEC
+    SEC --> AC & BC & CC & UC & ADC
+    AC --> AS
+    BC --> BS
+    CC --> CS
+    UC & ADC --> US
+    BS & CS & US --> REPO
+    REPO -->|"JDBC"| PG
+    US -->|"RestTemplate POST /ban"| NSC
+    NSC --> NSS
+    NSS -->|"SMTP"| MP
+    NSS -->|"Twilio API"| Internet["Twilio (SMS)"]

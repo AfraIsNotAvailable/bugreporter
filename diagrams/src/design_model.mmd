@@ -1,0 +1,37 @@
+graph TB
+    subgraph Presentation["Presentation Layer (React SPA)"]
+        PAGES["Pages\nHome · Login · Register\nBugList · BugDetail\nAdmin · Moderator"]
+        COMPONENTS["Components\nNavbar · BugCard · CommentCard\nCommentSort · AdminUsersTable"]
+        CONTEXT["State Management\nAuthContext (JWT decode)\nPrivateRoute (role guard)"]
+        SERVICES["API Services\nbugService.js\ncommentService.js\naxios instance (JWT header)"]
+    end
+
+    subgraph Application["Application Layer (Spring Boot)"]
+        CONTROLLERS["Controllers\n@RestController · @PreAuthorize\nRequest validation · Response mapping"]
+        SERVICES2["Services\n@Service · @Transactional\nBusiness logic · Permission checks"]
+        SECURITY["Security\nJwtAuthFilter · SecurityFilterChain\nBCrypt · SecurityContextHolder"]
+    end
+
+    subgraph Domain["Domain Layer"]
+        ENTITIES["JPA Entities\nUser · Bug · Comment · Tag\nBugVote · CommentVote"]
+        ENUMS["Value Objects\nRole · BugStatus · VoteType"]
+        REPOS["Repository Interfaces\nJpaRepository extensions\nCustom JPQL queries"]
+    end
+
+    subgraph Infrastructure["Infrastructure Layer"]
+        DB["PostgreSQL 17\nHibernate ORM\nddl-auto=update"]
+        NOTIF["Notification Service\nEmail (JavaMail)\nSMS (Twilio)"]
+        DOCKER["Docker Compose\nService orchestration"]
+    end
+
+    PAGES --> COMPONENTS
+    PAGES --> CONTEXT
+    PAGES --> SERVICES
+    SERVICES -->|"HTTP/REST"| CONTROLLERS
+    CONTROLLERS --> SERVICES2
+    SERVICES2 --> REPOS
+    REPOS --> ENTITIES
+    ENTITIES --> ENUMS
+    SERVICES2 -->|"RestTemplate"| NOTIF
+    REPOS -->|"JDBC"| DB
+    DOCKER --> DB

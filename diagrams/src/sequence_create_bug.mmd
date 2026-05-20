@@ -1,0 +1,32 @@
+sequenceDiagram
+    actor User
+    participant FE as React Frontend
+    participant Filter as JwtAuthFilter
+    participant BC as BugController
+    participant BS as BugService
+    participant DB as PostgreSQL
+
+    User->>FE: Fill bug form (title, text, tags), submit
+    FE->>BC: POST /api/bugs { title, text, imageUrl }\n Authorization: Bearer JWT
+    Filter->>Filter: Extract username from JWT
+    Filter->>DB: SELECT * FROM users WHERE username=?
+    DB-->>Filter: User row
+    Filter->>Filter: Check not banned, set SecurityContext
+    BC->>BC: resolveAuthenticatedUser(auth)
+    BC->>BS: createBug(BugRequest, userId)
+    BS->>DB: SELECT * FROM users WHERE id=?
+    DB-->>BS: User entity
+    BS->>DB: INSERT INTO bugs (title, text, status=OPEN, author_id)
+    DB-->>BS: Saved Bug
+    BS-->>BC: Bug entity
+    BC-->>FE: 201 BugResponse { id, title, status:"OPEN", ... }
+    FE->>FE: Add tags if provided
+    FE->>BC: POST /api/bugs/{id}/tags ["tag1","tag2"]
+    BC->>BS: addTagsToBug(bugId, tagNames)
+    BS->>DB: SELECT * FROM tags WHERE name=? (per tag)
+    BS->>DB: INSERT INTO tags if not exists
+    BS->>DB: INSERT INTO bug_tags (bug_id, tag_id)
+    DB-->>BS: Updated Bug
+    BS-->>BC: Bug entity
+    BC-->>FE: 200 BugResponse { ..., tags: ["tag1","tag2"] }
+    FE-->>User: Bug appears in list
