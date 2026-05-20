@@ -248,13 +248,17 @@ describe("comments", () => {
     cy.wait("@getComments");
 
     cy.contains("Other comment text").should("be.visible");
-    cy.contains("button", "...").click();
-    cy.contains("button", "Edit").should("be.visible");
-    cy.contains("button", "Delete").should("be.visible");
-    cy.contains("button", "Edit").click();
+    cy.get("[data-testid='comment-card']").within(() => {
+      cy.contains("button", "...").click();
+      cy.contains("button", "Edit").should("be.visible");
+      cy.contains("button", "Delete").should("be.visible");
+      cy.contains("button", "Edit").click();
+    });
 
     cy.get("[aria-label='Edit comment text']").clear().type("Mod edited");
-    cy.contains("button", "Submit").click();
+    cy.get("[data-testid='comment-card']").within(() => {
+      cy.contains("button", "Submit").click();
+    });
     cy.wait("@editComment");
 
     cy.contains("Mod edited").should("be.visible");

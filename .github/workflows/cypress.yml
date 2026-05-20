@@ -1,0 +1,98 @@
+name: Cypress E2E Tests
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  cypress:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: rootpassword
+          POSTGRES_DB: bugreporter_db
+        ports:
+          - 5436:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      mailpit:
+        image: axllent/mailpit:v1.27
+        ports:
+          - 1025:1025
+          - 8025:8025
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+          cache: maven
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: bugreporter-frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: bugreporter-frontend
+        run: npm ci
+
+      - name: Start backend
+        run: |
+          ./mvnw spring-boot:run > /tmp/backend.log 2>&1 &
+          echo "Waiting for backend on port 8081..."
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:8081/api/bugs > /dev/null 2>&1; then
+              echo "Backend is up"
+              break
+            fi
+            sleep 3
+          done
+
+      - name: Start frontend
+        working-directory: bugreporter-frontend
+        run: |
+          npm run dev > /tmp/frontend.log 2>&1 &
+          echo "Waiting for frontend on port 5173..."
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:5173 > /dev/null 2>&1; then
+              echo "Frontend is up"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Run Cypress tests
+        working-directory: bugreporter-frontend
+        run: npx cypress run
+
+      - name: Upload Cypress screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: bugreporter-frontend/cypress/screenshots
+          if-no-files-found: ignore
+
+      - name: Upload backend log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-log
+          path: /tmp/backend.log

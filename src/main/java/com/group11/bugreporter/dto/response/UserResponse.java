@@ -17,5 +17,6 @@ public class UserResponse{
     private LocalDateTime createdAt;
     //am adaugat asta aici pentru ca imi trebuie la banning (trmit mesaj pe sms dupa ce un user e banned)
     private String phoneNumber;
+    private Double score;
 
 }

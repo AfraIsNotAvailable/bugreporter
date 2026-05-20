@@ -1,0 +1,73 @@
+classDiagram
+    class User {
+        +Long id
+        +String username
+        +String email
+        +String password
+        +Role role
+        +boolean banned
+        +LocalDateTime createdAt
+        +String phoneNumber
+        +Double score
+    }
+    class Bug {
+        +Long id
+        +String title
+        +String text
+        +String imageUrl
+        +BugStatus status
+        +LocalDateTime createdAt
+        +Integer voteScore
+    }
+    class Comment {
+        +Long id
+        +String text
+        +String imageUrl
+        +LocalDateTime createdAt
+        +Integer score
+    }
+    class Tag {
+        +Long id
+        +String name
+    }
+    class BugVote {
+        +Long id
+        +VoteType voteType
+        +LocalDateTime createdAt
+    }
+    class CommentVote {
+        +Long id
+        +VoteType voteType
+        +LocalDateTime createdAt
+    }
+    class Role {
+        <<enumeration>>
+        USER
+        MODERATOR
+        ADMIN
+    }
+    class BugStatus {
+        <<enumeration>>
+        OPEN
+        IN_PROGRESS
+        FIXED
+        CLOSED
+    }
+    class VoteType {
+        <<enumeration>>
+        UPVOTE
+        DOWNVOTE
+    }
+
+    User "1" --> "0..*" Bug : authors
+    User "1" --> "0..*" Comment : authors
+    User "1" --> "0..*" BugVote : casts
+    User "1" --> "0..*" CommentVote : casts
+    Bug "1" --> "0..*" Comment : has
+    Bug "0..*" --> "0..*" Tag : tagged with
+    Bug "1" --> "0..*" BugVote : receives
+    Comment "1" --> "0..*" CommentVote : receives
+    User --> Role
+    Bug --> BugStatus
+    BugVote --> VoteType
+    CommentVote --> VoteType

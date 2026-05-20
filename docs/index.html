@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BugReporter — User Documentation</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --sidebar-bg: #f8fafc;
+      --sidebar-width: 260px;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --accent-hover: #1d4ed8;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --code-bg: #f1f5f9;
+      --header-h: 56px;
+      --green: #16a34a;
+      --yellow: #d97706;
+      --red: #dc2626;
+      --blue: #2563eb;
+      --gray: #64748b;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.65;
+    }
+
+    /* ── TOP BAR ── */
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: var(--header-h);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 20px; gap: 16px;
+    }
+    .logo { font-weight: 700; font-size: 1.1rem; color: var(--accent); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .logo svg { flex-shrink: 0; }
+    .header-links { margin-left: auto; display: flex; gap: 16px; align-items: center; }
+    .header-links a { font-size: 0.875rem; color: var(--muted); text-decoration: none; }
+    .header-links a:hover { color: var(--accent); }
+    #menu-toggle { display: none; background: none; border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; cursor: pointer; color: var(--text); }
+
+    /* ── LAYOUT ── */
+    .layout { display: flex; padding-top: var(--header-h); min-height: 100vh; }
+
+    /* ── SIDEBAR ── */
+    nav#sidebar {
+      position: fixed; top: var(--header-h); left: 0; bottom: 0;
+      width: var(--sidebar-width);
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 20px 0 40px;
+      transition: transform 0.25s ease;
+    }
+    nav#sidebar .section-label {
+      padding: 14px 20px 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    nav#sidebar a {
+      display: block;
+      padding: 6px 20px 6px 28px;
+      font-size: 0.875rem;
+      color: var(--muted);
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    nav#sidebar a:hover { color: var(--accent); background: var(--accent-light); }
+    nav#sidebar a.active { color: var(--accent); border-left-color: var(--accent); background: var(--accent-light); font-weight: 500; }
+
+    /* ── MAIN ── */
+    main {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      padding: 48px 64px 80px;
+      max-width: 900px;
+    }
+
+    /* ── TYPOGRAPHY ── */
+    h1 { font-size: 2.25rem; font-weight: 800; line-height: 1.2; margin-bottom: 12px; }
+    h2 { font-size: 1.5rem; font-weight: 700; margin: 48px 0 16px; padding-top: 8px; border-top: 1px solid var(--border); }
+    h2:first-of-type { border-top: none; margin-top: 32px; }
+    h3 { font-size: 1.1rem; font-weight: 600; margin: 28px 0 10px; color: var(--text); }
+    h4 { font-size: 0.95rem; font-weight: 600; margin: 20px 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    p { margin-bottom: 14px; color: var(--text); }
+    a { color: var(--accent); }
+    ul, ol { margin: 0 0 14px 24px; }
+    li { margin-bottom: 5px; }
+    strong { font-weight: 600; }
+
+    .lead { font-size: 1.1rem; color: var(--muted); margin-bottom: 32px; line-height: 1.7; }
+
+    /* ── HERO ── */
+    .hero { margin-bottom: 40px; }
+    .hero h1 { color: var(--text); }
+    .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 12px; border-radius: 99px; font-size: 0.78rem; font-weight: 600;
+    }
+    .badge-blue { background: #dbeafe; color: #1d4ed8; }
+    .badge-green { background: #dcfce7; color: #15803d; }
+    .badge-yellow { background: #fef9c3; color: #a16207; }
+    .badge-red { background: #fee2e2; color: #b91c1c; }
+    .badge-gray { background: #f1f5f9; color: #475569; }
+
+    /* ── CARDS ── */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin: 20px 0; }
+    .card {
+      border: 1px solid var(--border); border-radius: 10px; padding: 20px;
+      background: var(--bg);
+    }
+    .card h3 { margin: 0 0 8px; font-size: 1rem; }
+    .card p { margin: 0; font-size: 0.875rem; color: var(--muted); }
+    a.card {
+      display: block; text-decoration: none; color: inherit;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+    }
+    a.card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 16px rgba(37,99,235,0.12);
+      transform: translateY(-2px);
+    }
+    a.card .gh-link {
+      margin-top: 10px; font-size: 0.78rem; color: var(--accent);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .card-icon { font-size: 1.5rem; margin-bottom: 10px; }
+
+    /* ── ROLE CARDS ── */
+    .role-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin: 20px 0; }
+    .role-card { border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+    .role-card h3 { margin-bottom: 10px; font-size: 0.95rem; }
+    .role-card ul { margin: 0; padding-left: 16px; font-size: 0.85rem; color: var(--muted); }
+
+    /* ── STATUS PILLS ── */
+    .status { display: inline-block; padding: 2px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; font-family: monospace; }
+    .status-open { background: #dbeafe; color: #1d4ed8; }
+    .status-in-progress { background: #fef9c3; color: #a16207; }
+    .status-fixed { background: #dcfce7; color: #15803d; }
+    .status-closed { background: #f1f5f9; color: #475569; }
+
+    /* ── STATUS FLOW ── */
+    .status-flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 16px 0 24px; }
+    .status-flow .arrow { color: var(--muted); font-size: 1.2rem; }
+
+    /* ── STEPS ── */
+    .steps { counter-reset: step; margin: 16px 0 24px; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num {
+      counter-increment: step;
+      flex-shrink: 0;
+      width: 32px; height: 32px;
+      background: var(--accent); color: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: 700;
+    }
+    .step-num::before { content: counter(step); }
+    .step-body { flex: 1; padding-top: 4px; }
+    .step-body strong { display: block; margin-bottom: 4px; }
+    .step-body p { margin: 0; font-size: 0.9rem; color: var(--muted); }
+
+    /* ── CODE ── */
+    code { background: var(--code-bg); padding: 2px 6px; border-radius: 4px; font-family: "SFMono-Regular", Consolas, "Cascadia Code", monospace; font-size: 0.88em; color: #be123c; }
+    pre {
+      background: var(--code-bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px 20px;
+      overflow-x: auto; margin: 12px 0 20px;
+      font-family: "SFMono-Regular", Consolas, "Cascadia Code", monospace;
+      font-size: 0.875rem; line-height: 1.6;
+    }
+    pre code { background: none; padding: 0; color: var(--text); }
+
+    /* ── TABLES ── */
+    .table-wrap { overflow-x: auto; margin: 12px 0 24px; border: 1px solid var(--border); border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    th { background: var(--sidebar-bg); padding: 10px 16px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: 10px 16px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+
+    /* ── CALLOUTS ── */
+    .callout {
+      border-left: 4px solid;
+      border-radius: 0 8px 8px 0;
+      padding: 12px 16px; margin: 16px 0 20px;
+    }
+    .callout-info { border-color: var(--accent); background: #eff6ff; }
+    .callout-warn { border-color: #f59e0b; background: #fffbeb; }
+    .callout-tip  { border-color: #22c55e; background: #f0fdf4; }
+    .callout p { margin: 0; font-size: 0.9rem; }
+    .callout strong { display: block; margin-bottom: 4px; }
+
+    /* ── DIAGRAMS ── */
+    .diagram-wrap {
+      border: 1px solid var(--border); border-radius: 10px;
+      overflow: hidden; margin: 20px 0;
+      background: var(--sidebar-bg);
+    }
+    .diagram-wrap img { width: 100%; display: block; cursor: zoom-in; transition: opacity 0.15s; }
+    .diagram-wrap img:hover { opacity: 0.85; }
+    .diagram-caption { padding: 8px 16px; font-size: 0.78rem; color: var(--muted); background: var(--sidebar-bg); border-top: 1px solid var(--border); text-align: center; }
+
+    /* ── LIGHTBOX ── */
+    #lightbox {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.85);
+      align-items: center; justify-content: center;
+    }
+    #lightbox.open { display: flex; }
+    #lightbox-close {
+      position: fixed; top: 16px; right: 20px;
+      background: rgba(255,255,255,0.15); border: none;
+      color: #fff; font-size: 1.6rem; line-height: 1;
+      width: 40px; height: 40px; border-radius: 50%;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      z-index: 1001;
+    }
+    #lightbox-close:hover { background: rgba(255,255,255,0.3); }
+    #lightbox-hint {
+      position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+      color: rgba(255,255,255,0.55); font-size: 0.78rem; pointer-events: none;
+      white-space: nowrap;
+    }
+    #lightbox-canvas {
+      position: fixed; inset: 0; overflow: hidden; cursor: grab;
+    }
+    #lightbox-canvas.grabbing { cursor: grabbing; }
+    #lightbox-canvas img {
+      position: absolute; transform-origin: 0 0;
+      user-select: none; -webkit-user-drag: none;
+      max-width: none;
+    }
+    #lightbox-zoom {
+      position: fixed; bottom: 48px; right: 20px;
+      display: flex; flex-direction: column; gap: 6px; z-index: 1001;
+    }
+    #lightbox-zoom button {
+      width: 36px; height: 36px; border-radius: 6px;
+      background: rgba(255,255,255,0.15); border: none;
+      color: #fff; font-size: 1.2rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #lightbox-zoom button:hover { background: rgba(255,255,255,0.3); }
+
+    /* ── ACCORDION ── */
+    details { border: 1px solid var(--border); border-radius: 8px; margin: 10px 0; }
+    summary { padding: 12px 16px; font-weight: 600; cursor: pointer; user-select: none; font-size: 0.9rem; }
+    summary:hover { background: var(--sidebar-bg); border-radius: 8px; }
+    details[open] summary { border-bottom: 1px solid var(--border); border-radius: 8px 8px 0 0; }
+    details > div { padding: 16px; }
+
+    /* ── SCORE DISPLAY ── */
+    .score-pos { color: var(--green); font-weight: 600; }
+    .score-neg { color: var(--red); font-weight: 600; }
+    .score-zero { color: var(--gray); font-weight: 600; }
+
+    /* ── SECTION DIVIDER ── */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      main { padding: 32px 24px 60px; max-width: 100%; }
+    }
+    @media (max-width: 720px) {
+      #menu-toggle { display: block; }
+      nav#sidebar { transform: translateX(-100%); z-index: 99; }
+      nav#sidebar.open { transform: translateX(0); box-shadow: 4px 0 20px rgba(0,0,0,0.1); }
+      main { margin-left: 0; padding: 24px 16px 60px; }
+      h1 { font-size: 1.75rem; }
+      .card-grid, .role-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── ACTIVE SECTION HIGHLIGHT ── */
+    section { scroll-margin-top: calc(var(--header-h) + 20px); }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header>
+  <a class="logo" href="#intro">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    BugReporter
+  </a>
+  <div class="header-links">
+    <a href="#running">Setup</a>
+    <a href="#roles">Roles</a>
+    <a href="#api-ref">API</a>
+    <a href="https://github.com/AfraIsNotAvailable/bugreporter" target="_blank">GitHub ↗</a>
+  </div>
+  <button id="menu-toggle" onclick="toggleSidebar()">☰ Menu</button>
+</header>
+
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<div class="layout">
+<nav id="sidebar">
+  <div class="section-label">Getting Started</div>
+  <a href="#intro">What is BugReporter?</a>
+  <a href="#running">Running the App</a>
+  <a href="#demo-creds">Demo Credentials</a>
+  <a href="#register">Register &amp; Login</a>
+
+  <div class="section-label">Using the App</div>
+  <a href="#browsing">Browsing Bugs</a>
+  <a href="#reporting">Reporting a Bug</a>
+  <a href="#managing-bugs">Managing Your Bugs</a>
+  <a href="#status">Bug Status Lifecycle</a>
+  <a href="#comments">Comments</a>
+  <a href="#voting">Voting</a>
+  <a href="#score">Reputation Score</a>
+
+  <div class="section-label">Roles &amp; Permissions</div>
+  <a href="#roles">User Roles</a>
+  <a href="#moderator">Moderator Features</a>
+  <a href="#admin">Admin Features</a>
+
+  <div class="section-label">Reference</div>
+  <a href="#api-ref">API Endpoints</a>
+  <a href="#diagrams">Architecture Diagrams</a>
+  <a href="#tech">Tech Stack</a>
+  <a href="#team">Team</a>
+</nav>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<main>
+
+<!-- ──────────────────────── INTRO ──────────────────────── -->
+<section id="intro">
+  <div class="hero">
+    <h1>BugReporter</h1>
+    <p class="lead">
+      A collaborative bug tracking tool for development teams. Report bugs, discuss fixes through comments,
+      vote on helpful content, and track each issue through its full lifecycle — from first report to resolved.
+    </p>
+    <div class="badge-row">
+      <span class="badge badge-blue">Spring Boot 4</span>
+      <span class="badge badge-green">React 19</span>
+      <span class="badge badge-yellow">PostgreSQL 17</span>
+      <span class="badge badge-gray">JWT Auth</span>
+      <span class="badge badge-gray">Cypress E2E</span>
+    </div>
+    <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
+      <a href="./app/" style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; background:var(--accent); color:#fff; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.95rem;">
+        ▶ Live Demo
+      </a>
+      <a href="https://github.com/AfraIsNotAvailable/bugreporter" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:8px; padding:10px 20px; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:8px; text-decoration:none; font-weight:600; font-size:0.95rem;">
+        GitHub ↗
+      </a>
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🐛</div>
+      <h3>Report Bugs</h3>
+      <p>Submit bugs with title, description, image URL, and tags. Track them from open to resolved.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">💬</div>
+      <h3>Comment &amp; Discuss</h3>
+      <p>Thread comments on any bug. Post images, edit or delete your own messages.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">👍</div>
+      <h3>Vote</h3>
+      <p>Upvote and downvote bugs and comments. Most helpful content rises to the top.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🏅</div>
+      <h3>Reputation</h3>
+      <p>Earn score points when your content is upvoted. Lose points for downvoted content.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🛡️</div>
+      <h3>Moderation</h3>
+      <p>Moderators and admins can manage content and users across the platform.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔔</div>
+      <h3>Notifications</h3>
+      <p>Email and SMS notifications sent to users when their account is banned.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ──────────────────────── RUNNING ──────────────────────── -->
+<section id="running">
+  <h2>Running the App</h2>
+  <p>The application consists of three components that need to run simultaneously, plus a Docker-managed database.</p>
+
+  <h3>Prerequisites</h3>
+  <ul>
+    <li>Java 21+</li>
+    <li>Node.js 18+</li>
+    <li>Docker + Docker Compose</li>
+  </ul>
+
+  <h3>1 — Start the Backend</h3>
+  <p>The backend automatically starts PostgreSQL and Mailpit via Docker Compose if they are not already running.</p>
+  <pre><code>./mvnw spring-boot:run</code></pre>
+  <p>Backend runs at <code>http://localhost:8081</code>. On first start, demo data is seeded automatically.</p>
+
+  <div class="callout callout-info">
+    <p><strong>Reset the database</strong> — Use the IntelliJ run config <em>"BugreporterApplication (Reset DB)"</em> to drop all tables and re-seed fresh demo data.</p>
+  </div>
+
+  <h3>2 — Start the Frontend</h3>
+  <pre><code>cd bugreporter-frontend
+npm install
+npm run dev</code></pre>
+  <p>Frontend runs at <code>http://localhost:5173</code>. Open this URL in your browser.</p>
+
+  <h3>3 — (Optional) Start the Notification Service</h3>
+  <p>Required only if you want to test email/SMS notifications on user bans.</p>
+  <pre><code>cd notification-service
+gradle bootRun</code></pre>
+  <p>Notification service runs at <code>http://localhost:8082</code>. Emails are captured by Mailpit at <code>http://localhost:8025</code>.</p>
+</section>
+
+<!-- ──────────────────────── DEMO CREDS ──────────────────────── -->
+<section id="demo-creds">
+  <h2>Demo Credentials</h2>
+  <p>After first startup, these accounts are seeded automatically and ready to use:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Username</th><th>Password</th><th>Role</th><th>Can do</th></tr></thead>
+      <tbody>
+        <tr><td><code>ana</code></td><td><code>ana</code></td><td><span class="badge badge-red">ADMIN</span></td><td>Everything, including role changes</td></tr>
+        <tr><td><code>mihai</code></td><td><code>mihai</code></td><td><span class="badge badge-yellow">MODERATOR</span></td><td>Manage content and ban users</td></tr>
+        <tr><td><code>rares</code></td><td><code>rares</code></td><td><span class="badge badge-blue">USER</span></td><td>Report bugs, comment, vote</td></tr>
+        <tr><td><code>ioana</code></td><td><code>ioana</code></td><td><span class="badge badge-blue">USER</span></td><td>Report bugs, comment, vote</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ──────────────────────── REGISTER / LOGIN ──────────────────────── -->
+<section id="register">
+  <h2>Register &amp; Login</h2>
+
+  <h3>Creating an account</h3>
+  <div class="steps">
+    <div class="step"><div class="step-num"></div><div class="step-body"><strong>Go to /register</strong><p>Navigate to the Register page from the top navigation bar.</p></div></div>
+    <div class="step"><div class="step-num"></div><div class="step-body"><strong>Fill in your details</strong><p>Enter a unique username, email address, password, and optionally a phone number (used for ban notifications).</p></div></div>
+    <div class="step"><div class="step-num"></div><div class="step-body"><strong>Submit</strong><p>You are automatically logged in and redirected to the home page.</p></div></div>
+  </div>
+
+  <h3>Logging in</h3>
+  <div class="steps">
+    <div class="step"><div class="step-num"></div><div class="step-body"><strong>Go to /login</strong><p>Click Login in the navigation bar.</p></div></div>
+    <div class="step"><div class="step-num"></div><div class="step-body"><strong>Enter credentials</strong><p>Provide your username and password.</p></div></div>
+    <div class="step"><div class="step-num"></div><div class="step-body"><strong>Redirected by role</strong><p>Admins are sent to the Admin panel. All other users go to the home page. Your session is stored locally — you stay logged in on refresh.</p></div></div>
+  </div>
+
+  <div class="callout callout-warn">
+    <p><strong>Banned accounts</strong> — If your account has been banned, you will see an error message at login and cannot access the application.</p>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ──────────────────────── BROWSING ──────────────────────── -->
+<section id="browsing">
+  <h2>Browsing Bugs</h2>
+  <p>The bug list is public — no login required to read bugs or comments.</p>
+
+  <h3>Bug list (/bugs)</h3>
+  <ul>
+    <li>All bugs shown, sorted <strong>newest first</strong></li>
+    <li>Each card shows: title, status badge, author name with reputation score, creation date, and vote score</li>
+    <li>Click any bug card to open its detail page</li>
+  </ul>
+
+  <h3>Filtering &amp; searching</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Filter</th><th>How to use</th><th>Auth required?</th></tr></thead>
+      <tbody>
+        <tr><td>Search by title</td><td>Type in the search box — matches any substring, case-insensitive</td><td>No</td></tr>
+        <tr><td>Filter by tag</td><td>Click a tag chip on any bug, or type a tag name in the tag filter</td><td>No</td></tr>
+        <tr><td>Bugs by user</td><td>Click a username in the bug list</td><td>No</td></tr>
+        <tr><td>My bugs</td><td>Click "My Bugs" button in the filter bar</td><td>Yes</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ──────────────────────── REPORTING ──────────────────────── -->
+<section id="reporting">
+  <h2>Reporting a Bug</h2>
+  <p>You must be logged in to report a bug.</p>
+
+  <div class="steps">
+    <div class="step"><div class="step-num"></div><div class="step-body"><strong>Click "Report Bug"</strong><p>The button appears in the bug list page header when you are logged in.</p></div></div>
+    <div class="step"><div class="step-num"></div><div class="step-body"><strong>Fill in the form</strong><p>Provide a title (required), description (required), and an optional image URL. The status is always set to <span class="status status-open">OPEN</span> automatically.</p></div></div>
+    <div class="step"><div class="step-num"></div><div class="step-body"><strong>Submit</strong><p>The bug appears at the top of the list immediately.</p></div></div>
+    <div class="step"><div class="step-num"></div><div class="step-body"><strong>Add tags</strong><p>Open the bug detail page and use the tag input field to add comma-separated tags. New tags are created automatically if they do not exist yet.</p></div></div>
+  </div>
+
+  <div class="callout callout-tip">
+    <p><strong>Tags are shared</strong> — If you type a tag name that already exists, the existing tag is reused. This keeps filtering consistent across all bugs.</p>
+  </div>
+</section>
+
+<!-- ──────────────────────── MANAGING BUGS ──────────────────────── -->
+<section id="managing-bugs">
+  <h2>Managing Your Bugs</h2>
+  <p>Open a bug you authored to see the management controls.</p>
+
+  <h3>Editing a bug</h3>
+  <p>Click <strong>Edit</strong> to modify the title, description, or image URL. Only the bug author (or a moderator/admin) can edit a bug. Click <strong>Save</strong> to confirm or <strong>Cancel</strong> to discard.</p>
+
+  <h3>Deleting a bug</h3>
+  <p>Click <strong>Delete</strong> on the bug detail page. The bug and all its comments are permanently removed.</p>
+
+  <h3>Marking as resolved</h3>
+  <p>When a solution has been found, click <strong>Mark as Resolved</strong>. This sets the status to <span class="status status-fixed">FIXED</span> and disables further commenting. Only the bug's author can do this.</p>
+</section>
+
+<!-- ──────────────────────── STATUS ──────────────────────── -->
+<section id="status">
+  <h2>Bug Status Lifecycle</h2>
+  <p>Each bug progresses through statuses as work happens:</p>
+
+  <div class="status-flow">
+    <span class="status status-open">OPEN</span>
+    <span class="arrow">→</span>
+    <span class="status status-in-progress">IN_PROGRESS</span>
+    <span class="arrow">→</span>
+    <span class="status status-fixed">FIXED</span>
+  </div>
+  <div style="margin-bottom:16px">
+    <span style="color:var(--muted); font-size:.85rem">Moderators can also set:</span>
+    <span class="status status-closed" style="margin-left:8px">CLOSED</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Status</th><th>When it's set</th><th>Who sets it</th><th>Commenting</th></tr></thead>
+      <tbody>
+        <tr><td><span class="status status-open">OPEN</span></td><td>Bug is first created</td><td>Automatic</td><td>✅ Allowed</td></tr>
+        <tr><td><span class="status status-in-progress">IN_PROGRESS</span></td><td>First comment is posted</td><td>Automatic</td><td>✅ Allowed</td></tr>
+        <tr><td><span class="status status-fixed">FIXED</span></td><td>Author clicks "Mark as Resolved"</td><td>Bug author</td><td>❌ Disabled</td></tr>
+        <tr><td><span class="status status-closed">CLOSED</span></td><td>Moderator manually closes it</td><td>Moderator / Admin</td><td>❌ Disabled</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ──────────────────────── COMMENTS ──────────────────────── -->
+<section id="comments">
+  <h2>Comments</h2>
+  <p>Any logged-in user can comment on a bug that is <span class="status status-open">OPEN</span> or <span class="status status-in-progress">IN_PROGRESS</span>. Comments are sorted by their vote score — most helpful comments appear first.</p>
+
+  <h3>Posting a comment</h3>
+  <p>Scroll to the bottom of the bug detail page. Type your comment in the text area, optionally provide an image URL, and click <strong>Post Comment</strong>.</p>
+
+  <div class="callout callout-info">
+    <p><strong>Status flip</strong> — Posting the very first comment on an <span class="status status-open">OPEN</span> bug automatically changes its status to <span class="status status-in-progress">IN_PROGRESS</span>.</p>
+  </div>
+
+  <h3>Editing or deleting a comment</h3>
+  <p>Click the <strong>…</strong> menu on any comment you authored. Choose <strong>Edit</strong> to modify the text inline, or <strong>Delete</strong> to remove it. A confirmation dialog appears before deletion.</p>
+
+  <h3>Sorting comments</h3>
+  <p>Use the sort dropdown above the comment list to choose between:</p>
+  <ul>
+    <li><strong>Newest first</strong> — most recent at top (default server order)</li>
+    <li><strong>Oldest first</strong></li>
+    <li><strong>Highest score</strong> — most upvoted at top</li>
+    <li><strong>Lowest score</strong></li>
+  </ul>
+</section>
+
+<hr class="divider" />
+
+<!-- ──────────────────────── VOTING ──────────────────────── -->
+<section id="voting">
+  <h2>Voting</h2>
+  <p>Voting surfaces the most helpful bugs and comments and affects reputation scores.</p>
+
+  <h3>How to vote</h3>
+  <ul>
+    <li>Click <strong>▲</strong> to upvote, <strong>▼</strong> to downvote on any bug or comment</li>
+    <li>You must be logged in</li>
+    <li>You cannot vote on your own bugs or comments</li>
+    <li>One vote per item — clicking the same button again removes your vote (toggle)</li>
+    <li>Clicking the opposite button switches your vote</li>
+  </ul>
+
+  <h3>Vote score</h3>
+  <p>
+    The <strong>vote score</strong> = upvotes − downvotes. It is displayed on every bug and comment.<br/>
+    <span class="score-pos">+5</span> = positive &nbsp;
+    <span class="score-zero">0</span> = neutral &nbsp;
+    <span class="score-neg">-3</span> = negative
+  </p>
+
+  <details>
+    <summary>Voting rules — full reference</summary>
+    <div>
+      <h4>Bug voting</h4>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Action</th><th>Bug score</th></tr></thead>
+          <tbody>
+            <tr><td>New upvote</td><td>+1</td></tr>
+            <tr><td>New downvote</td><td>−1</td></tr>
+            <tr><td>Remove upvote (click again)</td><td>−1</td></tr>
+            <tr><td>Remove downvote (click again)</td><td>+1</td></tr>
+            <tr><td>Switch upvote → downvote</td><td>−2</td></tr>
+            <tr><td>Switch downvote → upvote</td><td>+2</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h4>Comment voting</h4>
+      <p>Same score rules apply to comments. Comments are automatically sorted by score.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ──────────────────────── SCORE ──────────────────────── -->
+<section id="score">
+  <h2>Reputation Score</h2>
+  <p>Every user starts with a score of <span class="score-zero">0</span>. Your score is shown in brackets next to your name on all bugs and comments: <code>alice [+12.5]</code></p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Event</th><th>Your score changes by</th></tr></thead>
+      <tbody>
+        <tr><td>Someone upvotes your <strong>bug</strong></td><td><span class="score-pos">+2.5</span></td></tr>
+        <tr><td>Someone downvotes your <strong>bug</strong></td><td><span class="score-neg">−1.5</span></td></tr>
+        <tr><td>Someone upvotes your <strong>comment</strong></td><td><span class="score-pos">+5.0</span></td></tr>
+        <tr><td>Someone downvotes your <strong>comment</strong></td><td><span class="score-neg">−2.5</span></td></tr>
+        <tr><td>You <strong>downvote</strong> someone else's comment</td><td><span class="score-neg">−1.5</span> (to you, the voter)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-tip">
+    <p>The downvote penalty on voters discourages spam downvoting. Think before you downvote — it costs you too.</p>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ──────────────────────── ROLES ──────────────────────── -->
+<section id="roles">
+  <h2>User Roles</h2>
+  <p>BugReporter has three roles with increasing privileges. Every new account starts as a <strong>User</strong>.</p>
+
+  <div class="role-grid">
+    <div class="role-card">
+      <h3><span class="badge badge-blue">USER</span></h3>
+      <ul>
+        <li>Browse bugs &amp; comments (public)</li>
+        <li>Register &amp; login</li>
+        <li>Report bugs</li>
+        <li>Edit / delete own bugs</li>
+        <li>Mark own bug as resolved</li>
+        <li>Add tags to any bug</li>
+        <li>Post, edit, delete own comments</li>
+        <li>Vote on others' bugs &amp; comments</li>
+        <li>View "My Bugs" filter</li>
+      </ul>
+    </div>
+    <div class="role-card">
+      <h3><span class="badge badge-yellow">MODERATOR</span></h3>
+      <ul>
+        <li>All User capabilities</li>
+        <li>Edit <em>any</em> bug or comment</li>
+        <li>Delete <em>any</em> bug or comment</li>
+        <li>Change bug status via dropdown</li>
+        <li>View users table</li>
+        <li>Ban / unban users</li>
+      </ul>
+    </div>
+    <div class="role-card">
+      <h3><span class="badge badge-red">ADMIN</span></h3>
+      <ul>
+        <li>All Moderator capabilities</li>
+        <li>Change any user's role</li>
+        <li>View all bugs in admin panel</li>
+        <li>View all comments in admin panel</li>
+        <li>Cannot be banned</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="diagram-wrap">
+    <img src="diagrams/use_case_diagram.svg" alt="Use Case Diagram" />
+    <div class="diagram-caption">Use Case Diagram — what each role can do</div>
+  </div>
+</section>
+
+<!-- ──────────────────────── MODERATOR ──────────────────────── -->
+<section id="moderator">
+  <h2>Moderator Features</h2>
+  <p>Access the Moderator panel at <code>/moderator</code> (visible in the navbar when logged in as Moderator or Admin).</p>
+
+  <h3>Editing any content</h3>
+  <p>As a moderator, the <strong>Edit</strong> button appears on all bugs and comments, not just your own. Use the same inline edit flow as regular users.</p>
+
+  <h3>Deleting any content</h3>
+  <p>Click the <strong>…</strong> menu → <strong>Delete</strong> on any bug or comment. Confirm in the dialog. Deleted content is permanent.</p>
+
+  <h3>Changing bug status</h3>
+  <p>A status dropdown appears on every bug detail page when you are a moderator. You can set any status: <span class="status status-open">OPEN</span>, <span class="status status-in-progress">IN_PROGRESS</span>, <span class="status status-fixed">FIXED</span>, or <span class="status status-closed">CLOSED</span>.</p>
+
+  <h3>Banning users</h3>
+  <div class="steps">
+    <div class="step"><div class="step-num"></div><div class="step-body"><strong>Open the Moderator panel</strong><p>Navigate to <code>/moderator</code>. The user table is displayed.</p></div></div>
+    <div class="step"><div class="step-num"></div><div class="step-body"><strong>Find the user</strong><p>Locate the user in the table by username or email.</p></div></div>
+    <div class="step"><div class="step-num"></div><div class="step-body"><strong>Click Ban</strong><p>The user is immediately banned. They receive an email and SMS notification. Their row shows "Banned: Yes" and the button changes to "Unban".</p></div></div>
+  </div>
+
+  <div class="callout callout-warn">
+    <p><strong>Moderators cannot ban other moderators or admins.</strong> Only regular User accounts can be banned.</p>
+  </div>
+
+  <h3>Unbanning users</h3>
+  <p>Find the banned user in the table — the button shows <strong>Unban</strong>. Click it to restore their access immediately.</p>
+</section>
+
+<!-- ──────────────────────── ADMIN ──────────────────────── -->
+<section id="admin">
+  <h2>Admin Features</h2>
+  <p>Access the Admin panel at <code>/admin</code>. Admins have all moderator capabilities plus role management.</p>
+
+  <h3>Changing a user's role</h3>
+  <p>In the admin users table, find the user and use the <strong>role dropdown</strong> to assign <code>USER</code>, <code>MODERATOR</code>, or <code>ADMIN</code>. The change takes effect immediately.</p>
+
+  <h3>Viewing all content</h3>
+  <p>The admin panel shows separate tabs for all users, all bugs, and all comments across the entire platform.</p>
+
+  <div class="callout callout-warn">
+    <p><strong>Admin accounts cannot be banned</strong> — even by other admins.</p>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ──────────────────────── API REFERENCE ──────────────────────── -->
+<section id="api-ref">
+  <h2>API Endpoints</h2>
+  <p>Base URL: <code>http://localhost:8081/api</code></p>
+
+  <h3>Authentication</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Method</th><th>Path</th><th>Auth</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>POST</code></td><td><code>/auth/login</code></td><td>—</td><td>Login, returns JWT token</td></tr>
+        <tr><td><code>POST</code></td><td><code>/auth/register</code></td><td>—</td><td>Register, returns JWT token</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Bugs</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Method</th><th>Path</th><th>Auth</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>GET</code></td><td><code>/bugs</code></td><td>—</td><td>All bugs, newest first</td></tr>
+        <tr><td><code>GET</code></td><td><code>/bugs/{id}</code></td><td>—</td><td>Single bug</td></tr>
+        <tr><td><code>GET</code></td><td><code>/bugs/filter?search=…</code></td><td>—</td><td>Search by title</td></tr>
+        <tr><td><code>GET</code></td><td><code>/bugs/filter?tag=…</code></td><td>—</td><td>Filter by tag</td></tr>
+        <tr><td><code>GET</code></td><td><code>/bugs/filter?mine=true</code></td><td>Required</td><td>Your own bugs</td></tr>
+        <tr><td><code>POST</code></td><td><code>/bugs</code></td><td>Required</td><td>Create bug</td></tr>
+        <tr><td><code>PUT</code></td><td><code>/bugs/{id}</code></td><td>Required</td><td>Edit bug (author / mod)</td></tr>
+        <tr><td><code>DELETE</code></td><td><code>/bugs/{id}</code></td><td>Required</td><td>Delete bug (author / mod)</td></tr>
+        <tr><td><code>POST</code></td><td><code>/bugs/{id}/tags</code></td><td>Required</td><td>Add tags</td></tr>
+        <tr><td><code>PATCH</code></td><td><code>/bugs/{id}/resolve</code></td><td>Required</td><td>Mark as resolved (author only)</td></tr>
+        <tr><td><code>PATCH</code></td><td><code>/bugs/{id}/status</code></td><td>Moderator</td><td>Change status</td></tr>
+        <tr><td><code>POST</code></td><td><code>/bugs/{id}/vote</code></td><td>Required</td><td>Vote on bug</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Comments</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Method</th><th>Path</th><th>Auth</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>GET</code></td><td><code>/comments/bug/{bugId}</code></td><td>—</td><td>All comments for a bug</td></tr>
+        <tr><td><code>POST</code></td><td><code>/comments/bug/{bugId}</code></td><td>Required</td><td>Post a comment</td></tr>
+        <tr><td><code>PUT</code></td><td><code>/comments/{id}</code></td><td>Required</td><td>Edit comment (author / mod)</td></tr>
+        <tr><td><code>DELETE</code></td><td><code>/comments/{id}</code></td><td>Required</td><td>Delete comment (author / mod)</td></tr>
+        <tr><td><code>POST</code></td><td><code>/comments/{id}/vote</code></td><td>Required</td><td>Vote on comment</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Admin</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Method</th><th>Path</th><th>Role</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>GET</code></td><td><code>/admin/users</code></td><td>Mod / Admin</td><td>All users</td></tr>
+        <tr><td><code>PUT</code></td><td><code>/admin/users/{id}/ban</code></td><td>Mod / Admin</td><td>Ban or unban user</td></tr>
+        <tr><td><code>PUT</code></td><td><code>/admin/users/{id}/role</code></td><td>Admin</td><td>Change user role</td></tr>
+        <tr><td><code>GET</code></td><td><code>/admin/bugs</code></td><td>Admin</td><td>All bugs (admin view)</td></tr>
+        <tr><td><code>GET</code></td><td><code>/admin/comments</code></td><td>Admin</td><td>All comments (admin view)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ──────────────────────── DIAGRAMS ──────────────────────── -->
+<section id="diagrams">
+  <h2>Architecture Diagrams</h2>
+
+  <h3>Deployment — How everything fits together</h3>
+  <div class="diagram-wrap">
+    <img src="diagrams/deployment_diagram.svg" alt="Deployment Diagram" />
+    <div class="diagram-caption">Deployment Diagram — services, ports, and connections</div>
+  </div>
+
+  <h3>Component — System components</h3>
+  <div class="diagram-wrap">
+    <img src="diagrams/component_diagram.svg" alt="Component Diagram" />
+    <div class="diagram-caption">Component Diagram — backend layers and their relationships</div>
+  </div>
+
+  <h3>Design Model — Architectural layers</h3>
+  <div class="diagram-wrap">
+    <img src="diagrams/design_model.svg" alt="Design Model" />
+    <div class="diagram-caption">Design Model — presentation, application, domain, and infrastructure layers</div>
+  </div>
+
+  <h3>Domain Model — Core entities</h3>
+  <div class="diagram-wrap">
+    <img src="diagrams/domain_model.svg" alt="Domain Model" />
+    <div class="diagram-caption">Domain Model — entities and their relationships</div>
+  </div>
+
+  <h3>Data Model (ER)</h3>
+  <div class="diagram-wrap">
+    <img src="diagrams/data_model.svg" alt="Data Model" />
+    <div class="diagram-caption">Entity-Relationship Diagram</div>
+  </div>
+
+  <h3>Database Schema</h3>
+  <div class="diagram-wrap">
+    <img src="diagrams/database_diagram.svg" alt="Database Diagram" />
+    <div class="diagram-caption">Database Diagram — full table and column definitions</div>
+  </div>
+
+  <h3>Class Diagram</h3>
+  <div class="diagram-wrap">
+    <img src="diagrams/class_diagram.svg" alt="Class Diagram" />
+    <div class="diagram-caption">Class Diagram — controllers and services</div>
+  </div>
+
+  <h3>Package Diagram</h3>
+  <div class="diagram-wrap">
+    <img src="diagrams/package_diagram.svg" alt="Package Diagram" />
+    <div class="diagram-caption">Package Diagram — Java package structure</div>
+  </div>
+
+  <h3>Sequence: Login Flow</h3>
+  <div class="diagram-wrap">
+    <img src="diagrams/sequence_login.svg" alt="Login Sequence" />
+    <div class="diagram-caption">Sequence Diagram — login and JWT issuance</div>
+  </div>
+
+  <h3>Sequence: Create Bug</h3>
+  <div class="diagram-wrap">
+    <img src="diagrams/sequence_create_bug.svg" alt="Create Bug Sequence" />
+    <div class="diagram-caption">Sequence Diagram — reporting a bug with tags</div>
+  </div>
+
+  <h3>Sequence: Vote on Comment</h3>
+  <div class="diagram-wrap">
+    <img src="diagrams/sequence_vote_comment.svg" alt="Vote Comment Sequence" />
+    <div class="diagram-caption">Sequence Diagram — voting with pessimistic locking and score updates</div>
+  </div>
+
+  <h3>Sequence: Ban User</h3>
+  <div class="diagram-wrap">
+    <img src="diagrams/sequence_ban_user.svg" alt="Ban User Sequence" />
+    <div class="diagram-caption">Sequence Diagram — banning a user with email/SMS notification</div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ──────────────────────── TECH ──────────────────────── -->
+<section id="tech">
+  <h2>Tech Stack</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Layer</th><th>Technology</th><th>Version</th></tr></thead>
+      <tbody>
+        <tr><td>Backend language</td><td>Java</td><td>21</td></tr>
+        <tr><td>Backend framework</td><td>Spring Boot</td><td>4.0.3</td></tr>
+        <tr><td>Database</td><td>PostgreSQL</td><td>17</td></tr>
+        <tr><td>Auth</td><td>JWT (JJWT)</td><td>0.13.0</td></tr>
+        <tr><td>Frontend language</td><td>JavaScript (JSX)</td><td>ES2022+</td></tr>
+        <tr><td>Frontend framework</td><td>React</td><td>19</td></tr>
+        <tr><td>Build tool</td><td>Vite</td><td>8</td></tr>
+        <tr><td>E2E testing</td><td>Cypress</td><td>15</td></tr>
+        <tr><td>Email (dev)</td><td>Mailpit</td><td>v1.27</td></tr>
+        <tr><td>SMS</td><td>Twilio SDK</td><td>9.13.0</td></tr>
+        <tr><td>Containers</td><td>Docker Compose</td><td>—</td></tr>
+        <tr><td>CI</td><td>GitHub Actions</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ──────────────────────── TEAM ──────────────────────── -->
+<section id="team">
+  <h2>Team</h2>
+  <div class="card-grid">
+    <a class="card" href="https://github.com/AfraIsNotAvailable" target="_blank" rel="noopener">
+      <h3>Afrasinei Serban</h3>
+      <p>Comments (frontend &amp; backend), backend security, JWT filter, voting logic</p>
+      <div class="gh-link">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        @AfraIsNotAvailable ↗
+      </div>
+    </a>
+    <a class="card" href="https://github.com/aleberar" target="_blank" rel="noopener">
+      <h3>Berar Alexandra</h3>
+      <p>Auth &amp; admin (frontend &amp; backend), frontend setup, user management, notifications</p>
+      <div class="gh-link">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        @aleberar ↗
+      </div>
+    </a>
+    <a class="card" href="https://github.com/PavelCata" target="_blank" rel="noopener">
+      <h3>Pavel Catalin</h3>
+      <p>Bugs (frontend &amp; backend), tag system, search &amp; filter, bug status lifecycle</p>
+      <div class="gh-link">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        @PavelCata ↗
+      </div>
+    </a>
+  </div>
+</section>
+
+</main>
+</div><!-- /.layout -->
+
+<!-- ═══════════════ LIGHTBOX ═══════════════ -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+  <button id="lightbox-close" onclick="closeLightbox()" aria-label="Close">✕</button>
+  <div id="lightbox-canvas">
+    <img id="lightbox-img" src="" alt="" />
+  </div>
+  <div id="lightbox-zoom">
+    <button onclick="lbZoom(1.25)" aria-label="Zoom in">+</button>
+    <button onclick="lbZoom(0.8)" aria-label="Zoom out">−</button>
+    <button onclick="lbReset()" aria-label="Reset" title="Reset view" style="font-size:.75rem">⟳</button>
+  </div>
+  <div id="lightbox-hint">Scroll to zoom · Drag to pan · Click outside or Esc to close</div>
+</div>
+
+<script>
+  // ── Sidebar toggle (mobile) ──
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+  }
+  document.addEventListener('click', function(e) {
+    const sidebar = document.getElementById('sidebar');
+    const toggle = document.getElementById('menu-toggle');
+    if (sidebar.classList.contains('open') && !sidebar.contains(e.target) && e.target !== toggle) {
+      sidebar.classList.remove('open');
+    }
+  });
+
+  // ── Active link tracking ──
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('nav#sidebar a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id);
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -75% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+
+  // ── Close sidebar on nav click (mobile) ──
+  navLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      document.getElementById('sidebar').classList.remove('open');
+    });
+  });
+
+  // ══════════════════════════════════════════
+  // ── LIGHTBOX ──
+  // ══════════════════════════════════════════
+  let lbScale = 1, lbX = 0, lbY = 0;
+  let lbDragging = false, lbStartX = 0, lbStartY = 0, lbOriginX = 0, lbOriginY = 0;
+
+  const lb      = document.getElementById('lightbox');
+  const lbImg   = document.getElementById('lightbox-img');
+  const lbCanvas = document.getElementById('lightbox-canvas');
+
+  function applyTransform() {
+    lbImg.style.transform = `translate(${lbX}px, ${lbY}px) scale(${lbScale})`;
+  }
+
+  function lbCenter() {
+    const vw = lb.clientWidth, vh = lb.clientHeight;
+    const nw = lbImg.naturalWidth  || lbImg.width  || 800;
+    const nh = lbImg.naturalHeight || lbImg.height || 600;
+    // fit inside viewport with some padding
+    const fitScale = Math.min((vw * 0.92) / nw, (vh * 0.88) / nh, 1);
+    lbScale = fitScale;
+    lbX = (vw - nw * lbScale) / 2;
+    lbY = (vh - nh * lbScale) / 2;
+    applyTransform();
+  }
+
+  function openLightbox(src, alt) {
+    lbImg.src = src;
+    lbImg.alt = alt || '';
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    lbImg.onload = lbCenter;
+    // if already cached, onload may not fire
+    if (lbImg.complete) lbCenter();
+  }
+
+  function closeLightbox() {
+    lb.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function lbReset() { lbCenter(); }
+
+  function lbZoom(factor) {
+    const vw = lb.clientWidth, vh = lb.clientHeight;
+    // zoom toward center of viewport
+    const cx = vw / 2, cy = vh / 2;
+    const newScale = Math.min(Math.max(lbScale * factor, 0.1), 10);
+    const ratio = newScale / lbScale;
+    lbX = cx - ratio * (cx - lbX);
+    lbY = cy - ratio * (cy - lbY);
+    lbScale = newScale;
+    applyTransform();
+  }
+
+  // click on diagram images opens lightbox
+  document.querySelectorAll('.diagram-wrap img').forEach(img => {
+    img.addEventListener('click', () => openLightbox(img.src, img.alt));
+  });
+
+  // close on backdrop click
+  lbCanvas.addEventListener('click', e => {
+    if (!lbDragging && e.target === lbCanvas) closeLightbox();
+  });
+
+  // Esc key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeLightbox();
+  });
+
+  // scroll to zoom
+  lbCanvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    const rect = lbCanvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const factor = e.deltaY < 0 ? 1.12 : 0.88;
+    const newScale = Math.min(Math.max(lbScale * factor, 0.1), 10);
+    const ratio = newScale / lbScale;
+    lbX = mx - ratio * (mx - lbX);
+    lbY = my - ratio * (my - lbY);
+    lbScale = newScale;
+    applyTransform();
+  }, { passive: false });
+
+  // drag to pan
+  lbCanvas.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    lbDragging = false;
+    lbStartX = e.clientX; lbStartY = e.clientY;
+    lbOriginX = lbX; lbOriginY = lbY;
+    lbCanvas.classList.add('grabbing');
+    const onMove = ev => {
+      const dx = ev.clientX - lbStartX, dy = ev.clientY - lbStartY;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) lbDragging = true;
+      lbX = lbOriginX + dx; lbY = lbOriginY + dy;
+      applyTransform();
+    };
+    const onUp = () => {
+      lbCanvas.classList.remove('grabbing');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      // reset lbDragging after click event fires
+      setTimeout(() => { lbDragging = false; }, 0);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  // touch pan + pinch zoom
+  let lbTouches = [];
+  lbCanvas.addEventListener('touchstart', e => {
+    lbTouches = Array.from(e.touches);
+    lbOriginX = lbX; lbOriginY = lbY;
+  }, { passive: true });
+
+  lbCanvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    const touches = Array.from(e.touches);
+    if (touches.length === 1 && lbTouches.length === 1) {
+      lbX = lbOriginX + touches[0].clientX - lbTouches[0].clientX;
+      lbY = lbOriginY + touches[0].clientY - lbTouches[0].clientY;
+    } else if (touches.length === 2 && lbTouches.length === 2) {
+      const prevDist = Math.hypot(lbTouches[0].clientX - lbTouches[1].clientX, lbTouches[0].clientY - lbTouches[1].clientY);
+      const newDist  = Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+      if (prevDist > 0) {
+        const factor = newDist / prevDist;
+        const cx = (touches[0].clientX + touches[1].clientX) / 2;
+        const cy = (touches[0].clientY + touches[1].clientY) / 2;
+        const newScale = Math.min(Math.max(lbScale * factor, 0.1), 10);
+        const ratio = newScale / lbScale;
+        lbX = cx - ratio * (cx - lbX);
+        lbY = cy - ratio * (cy - lbY);
+        lbScale = newScale;
+      }
+    }
+    lbTouches = touches;
+    applyTransform();
+  }, { passive: false });
+</script>
+</body>
+</html>

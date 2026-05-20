@@ -17,6 +17,7 @@ This document covers everything related to bugs: the database table, the entity,
 | `status` | VARCHAR | NOT NULL (enum: OPEN, IN_PROGRESS, FIXED, CLOSED) |
 | `created_at` | TIMESTAMP | NOT NULL, set once by Hibernate on insert |
 | `author_id` | BIGINT | FK → `users.id`, NOT NULL |
+| `vote_score` | INTEGER | NOT NULL, default 0 |
 
 `@CreationTimestamp` on `createdAt` means Hibernate automatically sets this field to the current time when the row is first inserted. Unlike `@PrePersist`, this is managed by Hibernate's event system rather than JPA lifecycle callbacks. `updatable = false` ensures Hibernate never overwrites it on update.
 
@@ -37,6 +38,24 @@ Tags are shared across bugs — `"auth"` is one row in the `tags` table, linked 
 | `tag_id` | BIGINT (FK → `tags.id`) |
 
 This is a many-to-many relationship: one bug can have many tags, and one tag can appear on many bugs. JPA manages this table automatically through the `@ManyToMany` annotation on `Bug.tags`.
+
+### `bug_votes` table (`BugVote.java`)
+
+| Column | Type | Constraints |
+|---|---|---|
+| `id` | BIGINT | PK, auto-generated |
+| `vote_type` | VARCHAR | NOT NULL (UPVOTE or DOWNVOTE) |
+| `created_at` | TIMESTAMP | NOT NULL |
+| `user_id` | BIGINT | FK → `users.id`, NOT NULL |
+| `bug_id` | BIGINT | FK → `bugs.id`, NOT NULL |
+
+**Unique constraint:** `(bug_id, user_id)` — one vote per user per bug.
+
+```java
+@Table(name = "bug_votes", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"bug_id", "user_id"})
+})
+```
 
 ---
 
@@ -63,6 +82,8 @@ private Set<Tag> tags = new HashSet<>();
 **`cascade = {CascadeType.PERSIST, CascadeType.MERGE}`:** When a bug is saved, any new `Tag` objects attached to it are also saved. This lets the service create new tags and add them to a bug in one operation.
 
 **`@Enumerated(EnumType.STRING)`** on `status`: the `BugStatus` enum value is stored as its string name (`"OPEN"`, `"IN_PROGRESS"`, etc.) rather than an integer ordinal. This makes the database readable and resilient to enum reordering.
+
+The `voteScore` field is a denormalized counter — same pattern as `Comment.score`. Updated on every vote cast, changed, or removed via `BugService.voteBug`. Default is 0, uses `@Builder.Default`.
 
 ---
 
@@ -94,6 +115,10 @@ public interface BugRepository extends JpaRepository<Bug, Long> {
     List<Bug> findAllByTitleContainingIgnoreCaseOrderByCreatedAtDesc(String title);
     List<Bug> findAllByAuthor_IdOrderByCreatedAtDesc(Long authorId);
     List<Bug> findAllByOrderByCreatedAtDesc();
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select b from Bug b where b.id = :bugId")
+    Optional<Bug> findByIdForUpdate(@Param("bugId") Long bugId);
 }
 ```
 
@@ -105,6 +130,7 @@ Spring Data JPA generates SQL for these methods by parsing their names. No SQL i
 | `findAllByTitleContainingIgnoreCaseOrderByCreatedAtDesc(title)` | `SELECT b FROM bugs b WHERE UPPER(b.title) LIKE UPPER('%?%') ORDER BY b.created_at DESC` |
 | `findAllByAuthor_IdOrderByCreatedAtDesc(authorId)` | `SELECT b FROM bugs b WHERE b.author_id = ? ORDER BY b.created_at DESC` |
 | `findAllByOrderByCreatedAtDesc()` | `SELECT b FROM bugs b ORDER BY b.created_at DESC` |
+| `findByIdForUpdate(bugId)` | `SELECT b FROM bugs b WHERE b.id = ? FOR UPDATE` |
 
 The `_` in method names like `Tags_Name` and `Author_Id` denotes navigation across a relationship — `Tags_Name` means "through the `tags` collection, access the `name` field".
 
@@ -150,12 +176,13 @@ return bugRepository.findById(id)
 
 ```java
 boolean isAuthor = bug.getAuthor().getId().equals(userId);
-if (!isAuthor) {
+boolean canEdit = isAuthor || role == Role.MODERATOR || role == Role.ADMIN;
+if (!canEdit) {
     throw new ForbiddenException("You are not allowed to edit this bug");
 }
 ```
 
-Only the author can edit bugs. Moderators and admins can delete but not edit. The role is passed in from the controller (extracted from the JWT via `resolveAuthenticatedUser`).
+The author, moderator, or admin can edit bugs. The `role` parameter is checked against `Role.MODERATOR` and `Role.ADMIN`. The role is passed in from the controller (extracted from the JWT via `resolveAuthenticatedUser`).
 
 ### `deleteBug(Long id, Long requestingUserId, Role requestingUserRole)`
 
@@ -204,6 +231,24 @@ return bugRepository.save(bug);
 
 Only the author can mark their own bug as FIXED. No moderator override here — moderators use the status dropdown instead.
 
+### `voteBug(Long bugId, Long requestingUserId, VoteType voteType)`
+
+Handles upvote/downvote on bugs. Uses a pessimistic write lock (`findByIdForUpdate`) to prevent concurrent vote race conditions.
+
+- Self-vote is rejected with `ForbiddenException`.
+- Three cases (same as `voteComment`):
+
+| Situation | Action | Bug score delta | Author score delta |
+|---|---|---|---|
+| New UPVOTE | Create `BugVote` | +1 | +2.5 |
+| New DOWNVOTE | Create `BugVote` | -1 | -1.5 |
+| Remove UPVOTE (same vote) | Delete `BugVote` | -1 | -2.5 |
+| Remove DOWNVOTE (same vote) | Delete `BugVote` | +1 | +1.5 |
+| Flip to UPVOTE | Update `BugVote.voteType` | +2 | +4.0 |
+| Flip to DOWNVOTE | Update `BugVote.voteType` | -2 | -4.0 |
+
+Both the bug and the author `User` entity are saved at the end of the transaction.
+
 ---
 
 ## Bug Controller
@@ -215,14 +260,15 @@ Only the author can mark their own bug as FIXED. No moderator override here — 
 | Method | Endpoint | Auth | `@PreAuthorize` | Description |
 |---|---|---|---|---|
 | POST | `/api/bugs` | Required | `isAuthenticated()` | Create bug |
-| GET | `/api/bugs` | None | None | List all bugs |
-| GET | `/api/bugs/{id}` | None | None | Get bug by ID |
+| GET | `/api/bugs` | None (optional auth for `userVote`) | None | List all bugs |
+| GET | `/api/bugs/{id}` | None (optional auth for `userVote`) | None | Get bug by ID |
 | PUT | `/api/bugs/{id}` | Required | `isAuthenticated()` | Update bug |
 | PATCH | `/api/bugs/{id}/status` | Required | `hasRole('MODERATOR')` | Change status (moderator) |
 | DELETE | `/api/bugs/{id}` | Required | `isAuthenticated()` | Delete bug |
 | POST | `/api/bugs/{id}/tags` | Required | `isAuthenticated()` | Add tags |
 | GET | `/api/bugs/filter` | None/Required | Checked in code for `mine` | Filter/search |
 | PATCH | `/api/bugs/{id}/resolve` | Required | `isAuthenticated()` | Mark as resolved (author only) |
+| POST | `/api/bugs/{id}/vote` | Required | `isAuthenticated()` | Vote on bug (upvote/downvote) |
 
 ### `resolveAuthenticatedUser` Helper
 
@@ -315,10 +361,13 @@ public class BugResponse {
     private String title;
     private String text;
     private String imageUrl;
-    private String status;       // stored as enum, exposed as string
+    private String status;         // stored as enum, exposed as string
     private LocalDateTime createdAt;
     private String authorUsername;
-    private Set<String> tags;    // tag names only, not tag IDs
+    private Set<String> tags;      // tag names only, not tag IDs
+    private Integer voteScore;     // sum of upvotes minus downvotes
+    private String userVote;       // null, "UPVOTE", or "DOWNVOTE" (null if unauthenticated)
+    private Double authorScore;    // author's reputation score at serialization time
 }
 ```
 
@@ -346,6 +395,7 @@ public static BugResponse fromEntity(Bug bug) {
 - `authorUsername` is exposed, not `authorId` — the frontend needs the name for display.
 - `tags` becomes a `Set<String>` of tag names — the frontend doesn't need tag IDs.
 - If `tags` is null (can happen on lazily-loaded entities), return an empty set instead of crashing.
+- `voteScore` mirrors the denormalized score on the `Bug` entity. `userVote` is populated by the controller from `BugVoteRepository` lookups. `authorScore` is pulled from `bug.getAuthor().getScore()`.
 
 `bug.getAuthor().getUsername()` — accessing a lazy `@ManyToOne` field. This works because `fromEntity` is called inside a `@Transactional` context (either the service method or the default proxy on the repository).
 
@@ -378,3 +428,4 @@ Used in `BugService.addTagsToBug` for the find-or-create pattern. Looks up a tag
 | Add tags | `POST /api/bugs/{id}/tags` | `BugController.addTags` → `BugService.addTagsToBug` |
 | Mark resolved | `PATCH /api/bugs/{id}/resolve` | `BugController.resolveBug` → `BugService.resolveBug` |
 | Mod change status | `PATCH /api/bugs/{id}/status?status=CLOSED` | `BugController.updateStatus` → `BugService.updateBugStatus` |
+| Vote on bug | `POST /api/bugs/{id}/vote` with `{ voteType: "UPVOTE" }` | `BugController.voteBug` → `BugService.voteBug` → pessimistic lock → score update |

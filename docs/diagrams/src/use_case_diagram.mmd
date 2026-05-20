@@ -1,0 +1,57 @@
+graph LR
+    ANON(["Anonymous"])
+    USER(["Registered User"])
+    MOD(["Moderator"])
+    ADMIN(["Admin"])
+
+    subgraph Public["Public (no login required)"]
+        UC1["Browse bug list"]
+        UC2["View bug detail"]
+        UC3["View comments"]
+        UC4["Search bugs by title"]
+        UC5["Filter bugs by tag"]
+    end
+
+    subgraph Auth["Authentication"]
+        UC6["Register account"]
+        UC7["Login"]
+    end
+
+    subgraph UserActions["Authenticated User Actions"]
+        UC8["Report bug"]
+        UC9["Edit own bug"]
+        UC10["Delete own bug"]
+        UC11["Mark own bug as resolved"]
+        UC12["Add tags to bug"]
+        UC13["Post comment"]
+        UC14["Edit own comment"]
+        UC15["Delete own comment"]
+        UC16["Upvote / downvote comment"]
+        UC17["Upvote / downvote bug"]
+        UC18["View own bugs"]
+    end
+
+    subgraph ModActions["Moderator Actions"]
+        UC19["Delete any bug"]
+        UC20["Edit any bug"]
+        UC21["Edit any comment"]
+        UC22["Delete any comment"]
+        UC23["Change bug status"]
+        UC24["Ban user"]
+        UC25["Unban user"]
+        UC26["View users table"]
+    end
+
+    subgraph AdminActions["Admin Actions"]
+        UC27["Change user role"]
+        UC28["View all bugs (admin panel)"]
+        UC29["View all comments (admin panel)"]
+    end
+
+    ANON --> UC1 & UC2 & UC3 & UC4 & UC5 & UC6 & UC7
+    USER --> UC1 & UC2 & UC3 & UC4 & UC5
+    USER --> UC8 & UC9 & UC10 & UC11 & UC12 & UC13 & UC14 & UC15 & UC16 & UC17 & UC18
+    MOD --> UC19 & UC20 & UC21 & UC22 & UC23 & UC24 & UC25 & UC26
+    MOD --> UC8 & UC9 & UC10 & UC11 & UC12 & UC13 & UC14 & UC15 & UC16 & UC17 & UC18
+    ADMIN --> UC27 & UC28 & UC29
+    ADMIN --> UC19 & UC20 & UC21 & UC22 & UC23 & UC24 & UC25 & UC26

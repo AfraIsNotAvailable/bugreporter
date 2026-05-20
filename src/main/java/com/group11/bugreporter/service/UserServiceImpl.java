@@ -45,6 +45,7 @@ public class UserServiceImpl implements UserService {
         response.setBanned(user.isBanned());
         response.setCreatedAt(user.getCreatedAt());
         response.setPhoneNumber(user.getPhoneNumber());
+        response.setScore(user.getScore());
         return response;
     }
 

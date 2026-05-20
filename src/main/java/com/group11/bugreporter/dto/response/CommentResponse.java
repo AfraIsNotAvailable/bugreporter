@@ -19,6 +19,7 @@ public class CommentResponse {
     private LocalDateTime createdAt;
     private Integer score;
     private String userVote; // null = note voted or not authenticated
+    private Double authorScore;
 
     public static CommentResponse fromEntity(Comment comment) {
         return fromEntity(comment, null);
@@ -35,6 +36,7 @@ public class CommentResponse {
                 .createdAt(comment.getCreatedAt())
                 .score(comment.getScore())
                 .userVote(userVote != null ? userVote.name() : null)
+                .authorScore(comment.getAuthor().getScore())
                 .build();
     }
 }

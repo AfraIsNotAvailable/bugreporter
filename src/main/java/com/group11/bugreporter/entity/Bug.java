@@ -41,6 +41,10 @@ public class Bug {
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer voteScore = 0;
+
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "bug_tags",

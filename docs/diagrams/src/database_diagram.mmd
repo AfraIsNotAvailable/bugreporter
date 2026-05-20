@@ -1,0 +1,63 @@
+erDiagram
+    users {
+        BIGINT id PK "NOT NULL AUTO"
+        VARCHAR username "NOT NULL UNIQUE"
+        VARCHAR email "NOT NULL UNIQUE"
+        VARCHAR password "NOT NULL BCrypt hash"
+        VARCHAR role "NOT NULL USER|MODERATOR|ADMIN"
+        BOOLEAN banned "NOT NULL default false"
+        TIMESTAMP created_at "NOT NULL PrePersist"
+        VARCHAR phone_number "NULLABLE UNIQUE"
+        DOUBLE score "NOT NULL default 0.0"
+    }
+    bugs {
+        BIGINT id PK "NOT NULL AUTO"
+        VARCHAR title "NOT NULL"
+        VARCHAR text "NOT NULL max 5000"
+        VARCHAR image_url "NULLABLE"
+        VARCHAR status "NOT NULL OPEN|IN_PROGRESS|FIXED|CLOSED"
+        TIMESTAMP created_at "NOT NULL CreationTimestamp"
+        BIGINT author_id FK "NOT NULL → users.id"
+        INTEGER vote_score "NOT NULL default 0"
+    }
+    tags {
+        BIGINT id PK "NOT NULL AUTO"
+        VARCHAR name "NOT NULL UNIQUE"
+    }
+    bug_tags {
+        BIGINT bug_id FK "→ bugs.id"
+        BIGINT tag_id FK "→ tags.id"
+    }
+    bug_votes {
+        BIGINT id PK "NOT NULL AUTO"
+        VARCHAR vote_type "NOT NULL UPVOTE|DOWNVOTE"
+        TIMESTAMP created_at "NOT NULL"
+        BIGINT user_id FK "NOT NULL → users.id"
+        BIGINT bug_id FK "NOT NULL → bugs.id"
+    }
+    comments {
+        BIGINT id PK "NOT NULL AUTO"
+        VARCHAR text "NOT NULL"
+        VARCHAR image_url "NULLABLE"
+        TIMESTAMP created_at "NOT NULL CreationTimestamp"
+        INTEGER score "NOT NULL default 0"
+        BIGINT author_id FK "NOT NULL → users.id"
+        BIGINT bug_id FK "NOT NULL → bugs.id"
+    }
+    comment_votes {
+        BIGINT id PK "NOT NULL AUTO"
+        VARCHAR vote_type "NOT NULL UPVOTE|DOWNVOTE"
+        TIMESTAMP created_at "NOT NULL"
+        BIGINT user_id FK "NOT NULL → users.id"
+        BIGINT comment_id FK "NOT NULL → comments.id"
+    }
+
+    users ||--o{ bugs : "author_id"
+    users ||--o{ comments : "author_id"
+    users ||--o{ bug_votes : "user_id UNIQUE(bug_id,user_id)"
+    users ||--o{ comment_votes : "user_id UNIQUE(comment_id,user_id)"
+    bugs ||--o{ comments : "bug_id"
+    bugs ||--o{ bug_votes : "bug_id"
+    bugs ||--o{ bug_tags : "bug_id"
+    tags ||--o{ bug_tags : "tag_id"
+    comments ||--o{ comment_votes : "comment_id"

@@ -39,6 +39,7 @@ function BugDetail() {
   const [commentImageUrl, setCommentImageUrl] = useState("");
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [commentError, setCommentError] = useState("");
+  const [bugVote, setBugVote] = useState(null);
 
   const pageStyle = {
     padding: "24px",
@@ -64,7 +65,7 @@ function BugDetail() {
 
   const isModerator = user?.role === "MODERATOR" || user?.role === "ADMIN";
   const isAuthor = Boolean(user?.username && bug?.authorUsername === user.username);
-  const canEdit = isAuthenticated && isAuthor;
+  const canEdit = isAuthenticated && (isAuthor || isModerator);
   const canDelete = isAuthenticated && (isAuthor || isModerator);
   const canResolve = isAuthor && bug?.status !== "FIXED" && bug?.status !== "CLOSED";
 
@@ -93,6 +94,7 @@ function BugDetail() {
         api.get(`/comments/bug/${id}`),
       ]);
       setBug(bugRes.data);
+      setBugVote(bugRes.data.userVote ?? null);
       setForm({
         title: bugRes.data.title || "",
         text: bugRes.data.text || "",
@@ -109,6 +111,17 @@ function BugDetail() {
   useEffect(() => {
     loadBug();
   }, [loadBug]);
+
+  const handleBugVote = async (type) => {
+    const removing = bugVote === type;
+    try {
+      const res = await api.post(`/bugs/${id}/vote`, { voteType: type });
+      setBug(res.data);
+      setBugVote(removing ? null : type);
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not vote");
+    }
+  };
 
   const handleUpdate = async (event) => {
     event.preventDefault();
@@ -244,8 +257,46 @@ function BugDetail() {
               </span>
             </div>
             <p style={{ color: "#666", fontSize: "13px" }}>
-              {bug.authorUsername} · {formatDate(bug.createdAt)}
+              {bug.authorUsername}
+              {bug.authorScore !== undefined && (
+                <span style={{ color: (bug.authorScore ?? 0) > 0 ? "#2a7a2a" : (bug.authorScore ?? 0) < 0 ? "#b00" : "#666", fontWeight: "bold" }}>
+                  {" "}[{(bug.authorScore ?? 0) > 0 ? `+${bug.authorScore}` : bug.authorScore ?? 0}]
+                </span>
+              )}
+              {" · "}{formatDate(bug.createdAt)}
             </p>
+            {isAuthenticated && !isAuthor && (
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+                <button
+                  type="button"
+                  style={{ ...buttonStyle, backgroundColor: bugVote === "UPVOTE" ? "#d4edda" : "#f3f3f3" }}
+                  onClick={() => handleBugVote("UPVOTE")}
+                >
+                  ▲
+                </button>
+                <span style={{
+                  fontWeight: "bold",
+                  color: (bug.voteScore ?? 0) > 0 ? "#2a7a2a" : (bug.voteScore ?? 0) < 0 ? "#b00" : "#666"
+                }}>
+                  {(bug.voteScore ?? 0) > 0 ? `+${bug.voteScore}` : bug.voteScore ?? 0}
+                </span>
+                <button
+                  type="button"
+                  style={{ ...buttonStyle, backgroundColor: bugVote === "DOWNVOTE" ? "#f8d7da" : "#f3f3f3" }}
+                  onClick={() => handleBugVote("DOWNVOTE")}
+                >
+                  ▼
+                </button>
+              </div>
+            )}
+            {(!isAuthenticated || isAuthor) && (
+              <p style={{ fontSize: "13px", color: "#666", marginBottom: "12px" }}>
+                Score:{" "}
+                <span style={{ fontWeight: "bold", color: (bug.voteScore ?? 0) > 0 ? "#2a7a2a" : (bug.voteScore ?? 0) < 0 ? "#b00" : "#666" }}>
+                  {(bug.voteScore ?? 0) > 0 ? `+${bug.voteScore}` : bug.voteScore ?? 0}
+                </span>
+              </p>
+            )}
             {bug.imageUrl && (
               <p>Image: <a href={bug.imageUrl} style={{ color: "#000" }}>{bug.imageUrl}</a></p>
             )}

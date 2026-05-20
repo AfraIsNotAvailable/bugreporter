@@ -42,6 +42,7 @@ Three things happen on every startup, in order:
 | `banned` | BOOLEAN | NOT NULL, default false |
 | `created_at` | TIMESTAMP | NOT NULL, set by `@PrePersist` |
 | `phone_number` | VARCHAR | NULLABLE, UNIQUE |
+| `score` | DOUBLE | NOT NULL, default 0.0 |
 
 `@PrePersist` is a JPA lifecycle callback — it runs automatically just before an entity is first inserted into the database. Here it sets `createdAt = LocalDateTime.now()`.
 
@@ -426,10 +427,11 @@ public class UserResponse {
     private boolean banned;
     private LocalDateTime createdAt;
     private String phoneNumber;
+    private Double score;
 }
 ```
 
-The `password` field from the `User` entity is intentionally absent. The DTO is the contract between backend and frontend — by not including the field, there is no way for a password hash to accidentally leak in an API response.
+The `password` field from the `User` entity is intentionally absent. The DTO is the contract between backend and frontend — by not including the field, there is no way for a password hash to accidentally leak in an API response. The `score` field is also included — it represents the user's reputation score accumulated from votes on their bugs and comments.
 
 ---
 

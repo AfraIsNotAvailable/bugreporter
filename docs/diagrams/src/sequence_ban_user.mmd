@@ -1,0 +1,34 @@
+sequenceDiagram
+    actor Moderator
+    participant FE as React Frontend
+    participant ADC as AdminController
+    participant US as UserServiceImpl
+    participant DB as PostgreSQL
+    participant NS as NotificationService
+    participant Mail as Mailpit (SMTP)
+    participant SMS as Twilio API
+
+    Moderator->>FE: Click Ban on user in admin table
+    FE->>ADC: PUT /api/admin/users/{id}/ban?banned=true\nAuthorization: Bearer JWT
+    ADC->>US: banUser(userId)
+    US->>DB: SELECT * FROM users WHERE id=?
+    DB-->>US: User row
+    US->>US: Check role != ADMIN and != MODERATOR
+    alt Target is ADMIN or MODERATOR
+        US-->>ADC: throw ForbiddenException
+        ADC-->>FE: 403 Forbidden
+        FE-->>Moderator: Error shown
+    else Target is USER
+        US->>DB: UPDATE users SET banned=true WHERE id=?
+        DB-->>US: Updated User
+        US->>NS: POST http://localhost:8082/api/notifications/ban\n{ username, email, phoneNumber }
+        NS->>Mail: Send email via SMTP :1025\n"Your account has been banned"
+        Mail-->>NS: 200 OK
+        NS->>SMS: Twilio REST API\nSend SMS to phoneNumber
+        SMS-->>NS: SMS queued
+        NS-->>US: 200 OK
+        US-->>ADC: UserResponse { banned: true }
+        ADC-->>FE: 200 UserResponse
+        FE->>FE: Update user row in table (Banned: Yes)
+        FE-->>Moderator: Ban confirmed
+    end

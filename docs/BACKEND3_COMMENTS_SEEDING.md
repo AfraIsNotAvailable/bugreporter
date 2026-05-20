@@ -221,13 +221,18 @@ return commentRepository.save(comment);
 
 **Three cases:**
 
-| Situation | Action | Score delta |
-|---|---|---|
-| No existing vote | Create new `CommentVote` | +1 (upvote) or -1 (downvote) |
-| Same vote as existing | Delete `CommentVote` (toggle off) | -1 (was upvoted) or +1 (was downvoted) |
-| Opposite vote | Update `CommentVote.voteType` | +2 (switching to upvote) or -2 (switching to downvote) |
+| Situation | Action | Comment score delta | Author score delta | Voter score delta |
+|---|---|---|---|---|
+| New UPVOTE | Create `CommentVote` | +1 | +5.0 | — |
+| New DOWNVOTE | Create `CommentVote` | -1 | -2.5 | -1.5 |
+| Remove UPVOTE (same vote) | Delete `CommentVote` | -1 | -5.0 | — |
+| Remove DOWNVOTE (same vote) | Delete `CommentVote` | +1 | +2.5 | +1.5 |
+| Flip to UPVOTE | Update `CommentVote.voteType` | +2 | +7.5 | +1.5 |
+| Flip to DOWNVOTE | Update `CommentVote.voteType` | -2 | -7.5 | -1.5 |
 
 Switching votes is ±2 because the previous vote also needs to be undone: removing a downvote is +1, adding an upvote is another +1, total +2.
+
+In addition to updating the comment's `score`, `voteComment` now updates the reputation scores of the involved users. The comment author gains/loses points based on how their content is received. The voter loses 1.5 points when downvoting another user's comment (discourages spam downvoting). Both the author and voter `User` entities are saved at the end of the transaction.
 
 ---
 
@@ -305,6 +310,7 @@ public class CommentResponse {
     private LocalDateTime createdAt;
     private Integer score;
     private String userVote;  // null, "UPVOTE", or "DOWNVOTE"
+    private Double authorScore;
 }
 ```
 
@@ -323,7 +329,7 @@ public static CommentResponse fromEntity(Comment comment, VoteType userVote) {
 }
 ```
 
-The second overload is called from `getCommentsByBugId` with the user's actual vote. `userVote.name()` converts the enum to its string name (`"UPVOTE"` or `"DOWNVOTE"`). The frontend reads this to pre-highlight the active vote button.
+The second overload is called from `getCommentsByBugId` with the user's actual vote. `userVote.name()` converts the enum to its string name (`"UPVOTE"` or `"DOWNVOTE"`). The frontend reads this to pre-highlight the active vote button. `authorScore` is pulled from `comment.getAuthor().getScore()` at serialization time — the frontend uses it to display the author's reputation next to their name.
 
 ---
 
