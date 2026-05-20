@@ -1,12 +1,6 @@
 # TODO — Spec Parity Checklist
 
-## 1. internalExecutionId (Required — cannot be deleted)
-
-- [ ] **Backend** `BugreporterApplication.java`: add `static final String internalExecutionId = UUID.randomUUID().toString()` and print it once at startup via `System.out.println` or logger before `SpringApplication.run()`
-
----
-
-## 2. Bug Voting (Feature 3 — entirely missing)
+## 1. Bug Voting (Feature 3 — entirely missing)
 
 ### Backend
 
@@ -29,7 +23,7 @@
 
 ---
 
-## 3. User Score (Bonus Feature 1 — entirely missing)
+## 2. User Score (Bonus Feature 1 — entirely missing)
 
 ### Backend
 
@@ -61,7 +55,7 @@
 
 ---
 
-## 4. Moderator Can Edit Any Bug (Bonus Feature 2 — partial)
+## 3. Moderator Can Edit Any Bug (Bonus Feature 2 — partial)
 
 ### Backend
 
@@ -73,7 +67,7 @@
 
 ---
 
-## 5. Cypress Tests (from `frontend-tasks.md` — incomplete)
+## 4. Cypress Tests (from `frontend-tasks.md` — incomplete)
 
 - [ ] `auth.cy.js`: "Login with banned user → ban error shown" test
 - [ ] `auth.cy.js`: "Admin ban user → user appears as banned in table" test
@@ -83,8 +77,7 @@
 
 ## Priority Order
 
-1. `internalExecutionId` — 5 min fix, required, cannot skip
-2. Moderator edit bug — 15 min fix backend + frontend
-3. Bug voting — ~2–3h (new entity, service, endpoints, frontend)
-4. User score — ~2–3h (depends on bug voting being done first)
-5. Cypress tests — ~1h
+1. Moderator edit bug — 15 min fix backend + frontend
+2. Bug voting — ~2–3h (new entity, service, endpoints, frontend)
+3. User score — ~2–3h (depends on bug voting being done first)
+4. Cypress tests — ~1h
