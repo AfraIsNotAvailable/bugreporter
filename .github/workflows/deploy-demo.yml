@@ -1,0 +1,49 @@
+name: Deploy Demo to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: bugreporter-frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: bugreporter-frontend
+        run: npm ci
+
+      - name: Build demo
+        working-directory: bugreporter-frontend
+        env:
+          VITE_DEMO_MODE: "true"
+        run: npm run build
+
+      - name: Assemble deploy directory
+        run: |
+          mkdir -p _deploy/app
+          # docs site at root
+          cp -r docs/* _deploy/
+          # React demo in /app/
+          cp -r bugreporter-frontend/dist/* _deploy/app/
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: _deploy
+          publish_branch: gh-pages

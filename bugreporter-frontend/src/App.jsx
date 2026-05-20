@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import DemoBanner from "./components/DemoBanner";
 import Home from "./pages/Home";
 import BugList from "./pages/BugList";
 import BugDetail from "./pages/BugDetail";
@@ -13,6 +14,7 @@ function App() {
   return (
     <>
       <Navbar />
+      <DemoBanner />
 
       <Routes>
         <Route path="/" element={<Home />} />
