@@ -36,6 +36,14 @@ const selectStyle = {
   backgroundColor: "#fff",
 };
 
+const buttonStyle = {
+  padding: "8px 12px",
+  border: "1px solid #333",
+  backgroundColor: "#f3f3f3",
+  cursor: "pointer",
+};
+
+//statusuri pentru bug-uri
 const statuses = ["OPEN", "IN_PROGRESS", "FIXED", "CLOSED"];
 
 function getErrorMessage(error, fallback) {
@@ -61,7 +69,9 @@ function Moderator() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [updatingBugId, setUpdatingBugId] = useState(null);
+  const [deletingBugId, setDeletingBugId] = useState(null);
 
   useEffect(() => {
     api
@@ -73,6 +83,7 @@ function Moderator() {
 
   const updateBugStatus = async (bug, status) => {
     setActionError("");
+    setSuccessMessage("");
     setUpdatingBugId(bug.id);
 
     try {
@@ -80,6 +91,7 @@ function Moderator() {
         params: { status },
       });
 
+      //actualizez lista locala dupa ce s-a facut schimbarea de status a bug-ului in baza de date 
       setBugs((currentBugs) =>
         currentBugs.map((currentBug) =>
           currentBug.id === bug.id ? response.data : currentBug,
@@ -89,6 +101,30 @@ function Moderator() {
       setActionError(getErrorMessage(err, "Failed to update bug status"));
     } finally {
       setUpdatingBugId(null);
+    }
+  };
+
+  const deleteBug = async (bugId) => {
+    const confirmed = window.confirm("Are you sure you want to delete this bug?");
+
+    if (!confirmed) {
+      return;
+    }
+
+    setActionError("");
+    setSuccessMessage("");
+    setDeletingBugId(bugId);
+
+    try {
+      await api.delete(`/bugs/${bugId}`);
+      setBugs((currentBugs) =>
+        currentBugs.filter((currentBug) => currentBug.id !== bugId),
+      );
+      setSuccessMessage("Bug deleted successfully.");
+    } catch (err) {
+      setActionError(getErrorMessage(err, "Failed to delete bug"));
+    } finally {
+      setDeletingBugId(null);
     }
   };
 
@@ -107,6 +143,7 @@ function Moderator() {
         {loading && <p>Loading bugs...</p>}
         {error && <p style={{ color: "red" }}>{error}</p>}
         {actionError && <p style={{ color: "red" }}>{actionError}</p>}
+        {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
 
         {!loading && !error && (
           <div style={{ overflowX: "auto" }}>
@@ -119,12 +156,13 @@ function Moderator() {
                   <th style={thStyle}>Status</th>
                   <th style={thStyle}>Author</th>
                   <th style={thStyle}>Created</th>
+                  <th style={thStyle}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {bugs.length === 0 && (
                   <tr>
-                    <td style={tdStyle} colSpan="6">
+                    <td style={tdStyle} colSpan="7">
                       No bugs found.
                     </td>
                   </tr>
@@ -151,6 +189,16 @@ function Moderator() {
                     </td>
                     <td style={tdStyle}>{bug.authorUsername || "-"}</td>
                     <td style={tdStyle}>{formatDate(bug.createdAt)}</td>
+                    <td style={tdStyle}>
+                      <button
+                        type="button"
+                        onClick={() => deleteBug(bug.id)}
+                        disabled={deletingBugId === bug.id}
+                        style={buttonStyle}
+                      >
+                        {deletingBugId === bug.id ? "Deleting..." : "Delete"}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

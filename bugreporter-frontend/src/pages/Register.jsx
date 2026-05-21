@@ -60,6 +60,7 @@ function Register() {
         phoneNumber,
       });
 
+      //logheaza userul automat dupa ce se face register
       login(response.data.token);
       navigate("/");
     } catch (err) {

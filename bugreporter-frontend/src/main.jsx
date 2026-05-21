@@ -36,3 +36,4 @@ prepare().then(mount).catch((e) => {
   console.error("[MSW] Failed to start service worker, mounting anyway:", e);
   mount();
 });
+
